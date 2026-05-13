@@ -1,0 +1,147 @@
+{
+  "colorScheme": "dark",
+  "fonts": [
+    {
+      "family": "DM Sans",
+      "role": "body"
+    },
+    {
+      "family": "Cormorant Garamond",
+      "role": "heading"
+    }
+  ],
+  "colors": {
+    "primary": "#C9A84C",
+    "secondary": "#4A6741",
+    "accent": "#C9A84C",
+    "background": "#50504F",
+    "textPrimary": "#50504F",
+    "link": "#A0998A"
+  },
+  "typography": {
+    "fontFamilies": {
+      "primary": "DM Sans",
+      "heading": "Cormorant Garamond"
+    },
+    "fontStacks": {
+      "heading": [
+        "Cormorant Garamond",
+        "serif"
+      ],
+      "body": [
+        "DM Sans",
+        "sans-serif"
+      ],
+      "paragraph": [
+        "DM Sans",
+        "system-ui",
+        "sans-serif"
+      ]
+    },
+    "fontSizes": {
+      "h1": "104px",
+      "h2": "35.2px",
+      "body": "14.4px"
+    }
+  },
+  "spacing": {
+    "baseUnit": 4,
+    "borderRadius": "8px"
+  },
+  "components": {
+    "input": {
+      "background": "#0F0F0E",
+      "textColor": "#F0EBE3",
+      "borderColor": "#221D0F",
+      "borderRadius": "12px",
+      "borderRadiusCorners": {
+        "topLeft": "12px",
+        "topRight": "12px",
+        "bottomRight": "12px",
+        "bottomLeft": "12px"
+      },
+      "shadow": "none"
+    },
+    "buttonPrimary": {
+      "background": "transparent",
+      "textColor": "#C9A84C",
+      "borderColor": "#C9A84C",
+      "borderRadius": "999px",
+      "borderRadiusCorners": {
+        "topLeft": "999px",
+        "topRight": "999px",
+        "bottomRight": "999px",
+        "bottomLeft": "999px"
+      },
+      "shadow": "none"
+    },
+    "buttonSecondary": {
+      "background": "#0C140D",
+      "textColor": "#EEEAE2",
+      "borderColor": "#19150B",
+      "borderRadius": "16px",
+      "borderRadiusCorners": {
+        "topLeft": "16px",
+        "topRight": "16px",
+        "bottomRight": "16px",
+        "bottomLeft": "16px"
+      },
+      "shadow": "rgba(0, 0, 0, 0.35) 0px 4px 16px 0px"
+    }
+  },
+  "images": {
+    "favicon": null,
+    "ogImage": "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/8e5acc51-e3fd-4d11-94b2-bf6719dcaee9",
+    "logoHref": "File saved at: attached_assets/logoHref.html",
+    "logoAlt": "CannaZen"
+  },
+  "__llm_logo_reasoning": {
+    "selectedIndex": 12,
+    "reasoning": "Selected #12 because it is visible, located in the header, medium-sized, and the alt text matches the brand name 'CannaZen'.",
+    "confidence": 0.95,
+    "source": "llm"
+  },
+  "__llm_button_reasoning": {
+    "primary": {
+      "index": 8,
+      "text": "Découvrir la boutique→",
+      "reasoning": "Button #11 has a distinct call-to-action text 'Découvrir la boutique→' and uses the accent color #C9A84C, making it stand out as the primary CTA."
+    },
+    "secondary": {
+      "index": 2,
+      "text": "Paiement 100% SécuriséTransactions chiffrées SSLEn savoir plus →",
+      "reasoning": "Button #5 has a different background color (#0C140D) and provides additional information, making it suitable as a secondary button."
+    },
+    "confidence": 0.9
+  },
+  "personality": {
+    "tone": "modern",
+    "energy": "medium",
+    "targetAudience": "health-conscious consumers interested in CBD products"
+  },
+  "designSystem": {
+    "framework": "tailwind",
+    "componentLibrary": ""
+  },
+  "confidence": {
+    "buttons": 0.9,
+    "colors": 0.9,
+    "overall": 0.9
+  },
+  "__llm_metadata": {
+    "logoSelection": {
+      "llmCalled": true,
+      "llmSucceeded": true,
+      "finalSource": "llm",
+      "rawLogoSelection": {
+        "selectedLogoIndex": 12,
+        "selectedLogoReasoning": "Selected #12 because it is visible, located in the header, medium-sized, and the alt text matches the brand name 'CannaZen'.",
+        "confidence": 0.95
+      }
+    },
+    "buttonClassification": {
+      "llmCalled": true,
+      "llmSucceeded": true
+    }
+  }
+}

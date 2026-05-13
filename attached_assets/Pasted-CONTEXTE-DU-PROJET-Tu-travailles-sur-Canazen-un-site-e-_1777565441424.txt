@@ -1,0 +1,259 @@
+CONTEXTE DU PROJET
+Tu travailles sur Canazen, un site e-commerce de cannabis légal (CBD) pour le marché français et européen. Le design front-end a déjà été créé. Ta mission est de transformer ce design en un site e-commerce fonctionnel, sécurisé, conforme à la loi française et pérenne, prêt à recevoir des commandes réelles.
+Stack technique attendue : Node.js / Next.js (App Router) + TypeScript + Tailwind + Prisma + PostgreSQL (Neon ou Supabase). Si le design existant est dans une autre stack (React + Vite, ou autre), adapte-toi à l'existant — ne réécris pas le design.
+
+CE QUE JE VEUX QUE TU FASSES
+Tu vas construire le site de A à Z, en prenant toutes les décisions techniques toi-même quand elles sont raisonnables. Pour les éléments qui nécessitent mes identifiants ou mes clés API, tu t'arrêtes et tu me demandes explicitement ce dont tu as besoin, en m'expliquant où aller les chercher et comment les configurer.
+Tu travailleras en étapes séquentielles. À la fin de chaque étape :
+
+Tu fais un récap de ce qui a été fait
+Tu listes ce qu'il me reste à fournir (clés API, validations de comptes, décisions de design)
+Tu attends ma réponse avant de passer à l'étape suivante
+
+
+CADRE LÉGAL À RESPECTER ABSOLUMENT
+Le site doit respecter la réglementation CBD française 2026 :
+
+Tous les produits CBD doivent contenir < 0,3 % de THC
+Aucune allégation thérapeutique ne doit apparaître dans les fiches produits, le blog, les emails ou les pubs (pas de "soigne", "guérit", "traite", "anti-douleur" — tu peux dire "bien-être", "détente", "confort")
+Vérification d'âge +18 obligatoire à l'entrée du site (pop-up bloquant + cookie de session)
+Chaque fiche produit doit pouvoir afficher : taux de CBD, taux de THC, n° de lot, lien vers certificat d'analyse (COA) PDF, variété de chanvre, origine
+CGV, mentions légales, politique de confidentialité, politique de retour doivent être présents (j'ai un juriste qui rédigera le contenu, prévois juste les pages)
+Bandeau cookies conforme CNIL (consentement granulaire avant tout tracking)
+RGPD : droit à l'oubli, export des données, opt-in newsletter
+Mentionner sur les pages concernées : interdiction de vente aux mineurs et avertissement conduite/THC dans le sang
+
+⚠️ Avertissement réglementaire 2026 : Le PLF 2026 envisage de restreindre la vente en ligne des produits CBD fumables (fleurs, résines, pré-rolls). Architecture le catalogue de manière à ce qu'on puisse désactiver une catégorie entière en un clic depuis l'admin si la loi change. Les huiles, cosmétiques, infusions et compléments ne sont pas concernés.
+
+FONCTIONNALITÉS À CONSTRUIRE
+1. Authentification
+
+Connexion Google (OAuth 2.0) via NextAuth.js (ou équivalent)
+Connexion email + mot de passe classique avec hash bcrypt
+Vérification email au moment de l'inscription (lien magique)
+Récupération de mot de passe par email
+Vérification d'âge +18 : pop-up bloquant à la première visite, stocké en cookie 30 jours
+2FA optionnel pour le compte admin
+
+2. Catalogue produits
+Structure les catégories ainsi (modifiable depuis l'admin) :
+
+Huiles CBD
+Cosmétiques CBD
+Infusions et tisanes
+Compléments alimentaires
+Fleurs et résines (à isoler — risque réglementaire)
+Accessoires
+
+Modèle produit (Prisma schema) avec au minimum ces champs :
+- id, slug, name, description (rich text)
+- price, comparePrice (pour solde)
+- stock, sku
+- cbdPercent, thcPercent, batchNumber
+- coaPdfUrl (certificat d'analyse)
+- variety, origin, isOrganic
+- weight (pour calcul livraison)
+- images[] (avec URL Cloudinary ou Uploadthing)
+- categoryId, tags[]
+- isActive, isFeatured
+- createdAt, updatedAt
+- SEO fields (metaTitle, metaDescription)
+3. Tunnel d'achat
+
+Panier persistant (localStorage + session DB pour utilisateurs connectés)
+Page panier avec modification quantités, code promo, estimation livraison
+Checkout en 3 étapes max : Adresse → Livraison → Paiement
+Checkout invité possible (sans création de compte obligatoire)
+Calcul automatique des frais de port selon poids et destination
+Confirmation par email immédiate après commande
+
+4. Paiements (PayPlug en priorité)
+
+Intégration PayPlug comme PSP principal (j'ai choisi cette solution car elle accepte le CBD légal sous conditions)
+Mode TEST d'abord, basculement en LIVE sur ma validation
+Activer 3x/4x Oney (paiement fractionné, très utilisé en France)
+Activer Apple Pay et Google Pay via PayPlug
+Webhook PayPlug pour mettre à jour le statut de commande automatiquement
+Backup payment method : prévois une intégration secondaire prête à activer (MONEI ou Viva Wallet) au cas où PayPlug suspendrait le compte. Code-la mais désactive-la par défaut.
+Virement bancaire manuel activable comme filet de sécurité
+
+5. Livraison
+Intègre ces transporteurs (avec API ou plugin si dispo, sinon calcul manuel basé sur poids/destination) :
+
+Colissimo (La Poste) — domicile et point retrait
+Mondial Relay — point relais (très utilisé pour CBD pour la discrétion)
+Chronopost — express
+Click & Collect — retrait en boutique (configurable par l'admin avec adresse)
+International Europe — Colissimo International + Chronopost International
+
+Génère les étiquettes d'expédition automatiquement quand c'est possible (API Colissimo, API Mondial Relay).
+Tracking de commande visible côté client avec mise à jour automatique du statut.
+6. Espace client
+
+Tableau de bord (commandes en cours, historique)
+Adresses enregistrées
+Téléchargement factures PDF
+Suivi de livraison
+Programme de fidélité (points)
+Gestion des abonnements (box mensuelle)
+Avis laissés
+Préférences newsletter
+
+7. Programme de fidélité
+
+1 € dépensé = 1 point (configurable)
+Paliers : Bronze (0+) → Argent (500+) → Or (2000+)
+Récompenses : codes promo, produits offerts à partir de X points
+Affichage solde de points dans l'espace client et au checkout
+Historique des transactions de points
+
+8. Avis clients
+
+Système d'avis natif (1 à 5 étoiles + commentaire)
+Envoi automatique d'une demande d'avis par email 7 jours après livraison
+Modération admin avant publication
+Schema.org Review pour rich snippets Google
+Possibilité d'intégrer Avis Vérifiés ou Trustpilot plus tard (laisse les hooks)
+
+9. Blog SEO
+
+CMS simple intégré : titre, slug, image, contenu rich text, catégorie, tags, auteur, SEO meta
+Génération sitemap.xml automatique
+Schema.org Article
+Maillage interne automatique (suggestions de produits liés en bas d'article)
+Compatible MDX si possible
+
+10. Abonnements / Box mensuelle
+
+Création de "boxes" récurrentes par l'admin
+Gestion des abonnements clients (pause, annulation, modification)
+Prélèvement automatique récurrent via PayPlug (subscription API)
+Email de rappel 3 jours avant prélèvement
+
+11. Chat en direct
+
+Intégration Crisp (gratuit jusqu'à 2 agents) — script à insérer dans le <head> après consentement cookies
+Charger le script uniquement après acceptation des cookies (sinon non-conforme RGPD)
+
+12. Analytics
+
+Google Analytics 4 avec enhanced e-commerce (événements view_item, add_to_cart, begin_checkout, purchase)
+Google Tag Manager pour gérer tous les pixels de tracking
+Chargement conditionné au consentement cookies
+Dashboard admin avec : CA, commandes, panier moyen, top produits, taux de conversion
+
+13. Admin / Back-office
+Construis un back-office complet :
+
+Dashboard avec KPI (CA jour/semaine/mois, commandes, top produits)
+Gestion produits (CRUD, upload images, gestion stock, import CSV)
+Gestion catégories
+Gestion commandes (statuts, remboursements via PayPlug, étiquettes d'expédition)
+Gestion clients
+Gestion blog
+Gestion codes promo (montant fixe, %, livraison gratuite, conditions)
+Gestion abonnements
+Gestion fidélité
+Gestion avis (modération)
+Réglages généraux (TVA, devises, frais de port, emails)
+Logs d'activité admin
+
+14. Emails transactionnels
+Templates à créer (HTML responsive) :
+
+Inscription / vérification email
+Réinitialisation mot de passe
+Confirmation de commande
+Commande expédiée + tracking
+Commande livrée + demande d'avis (J+7)
+Panier abandonné (J+1, J+3)
+Anniversaire client (code promo)
+Newsletter mensuelle
+
+À envoyer via Brevo (ex-Sendinblue) ou Resend.
+15. SEO technique
+
+URLs propres (/huiles-cbd/huile-broad-spectrum-10-pourcent)
+Sitemap.xml dynamique
+Robots.txt
+Schema.org : Product, Organization, BreadcrumbList, Review, Article, FAQPage
+Open Graph + Twitter Cards
+Canonical URLs
+Hreflang si multilingue
+Lazy loading images, format WebP/AVIF
+Objectif Lighthouse > 90 partout
+
+16. Sécurité
+
+HTTPS forcé (HSTS)
+Rate limiting sur login, signup, password reset
+CSRF protection
+Sanitization de tous les inputs
+Headers de sécurité (CSP, X-Frame-Options, etc.)
+Sauvegardes DB automatiques quotidiennes
+Logs d'erreurs vers Sentry (gratuit pour démarrer)
+Mot de passe admin avec règles strictes + 2FA
+URL admin non standard (pas /admin mais /console-cz ou similaire)
+
+
+CE QUE JE DOIS TE FOURNIR (ne commence pas avant de me les avoir demandés)
+À chaque étape, demande-moi explicitement les éléments suivants au moment où tu en as besoin, en m'indiquant précisément où les obtenir :
+
+Base de données PostgreSQL : URL de connexion (Neon, Supabase ou Replit DB)
+Compte Google Cloud Console : Client ID + Client Secret OAuth (explique-moi comment créer le projet, les redirect URIs à configurer)
+Compte PayPlug : Clé API TEST + LIVE (dis-moi comment activer le compte, quels documents fournir pour le KYC CBD)
+Compte Brevo ou Resend : Clé API pour les emails (+ vérification DNS du domaine canazen.fr)
+Compte Cloudinary ou Uploadthing : pour l'hébergement des images produits
+Compte Crisp : Website ID
+Compte Google Analytics 4 : Measurement ID (G-XXXXXXX)
+Compte Google Search Console : validation DNS
+Compte Sentry : DSN pour les logs d'erreurs
+Nom de domaine : canazen.fr (et canazen.com en redirection)
+API Colissimo : identifiants contrat (si on veut générer les étiquettes auto)
+API Mondial Relay : identifiants enseigne
+Logo, photos, contenus juridiques (CGV, mentions, politique de confidentialité) — je te les fournirai
+
+Pour chaque clé, explique-moi en français simple :
+
+Où aller la chercher (URL exacte)
+Quoi cliquer
+Comment la coller dans le projet (variable d'environnement)
+Comment tester que ça marche
+
+
+ORDRE DE TRAVAIL (étapes séquentielles)
+Étape 1 — Audit du design existant et mise en place de l'architecture du projet (structure des dossiers, dépendances, ESLint/Prettier, Tailwind config, Prisma init).
+Étape 2 — Base de données : schémas Prisma complets (User, Product, Category, Order, OrderItem, Address, Review, BlogPost, Subscription, LoyaltyPoint, etc.), migrations.
+Étape 3 — Authentification (NextAuth + Google OAuth + email/mdp + vérification email + reset password + middleware de protection des routes).
+Étape 4 — Vérification d'âge +18 (pop-up bloquant, cookie de session).
+Étape 5 — Catalogue : pages catégories, fiches produits, recherche, filtres, panier.
+Étape 6 — Tunnel d'achat : checkout 3 étapes + intégration PayPlug en mode TEST.
+Étape 7 — Livraison : intégration des transporteurs, calcul des frais de port, étiquettes.
+Étape 8 — Espace client + emails transactionnels.
+Étape 9 — Programme de fidélité + Avis + Abonnements.
+Étape 10 — Blog SEO + SEO technique global.
+Étape 11 — Back-office admin complet.
+Étape 12 — Analytics, chat Crisp, bandeau cookies.
+Étape 13 — Tests E2E (Playwright) sur les parcours critiques + tests unitaires sur la logique métier.
+Étape 14 — Sécurité, performance, accessibilité, audit Lighthouse.
+Étape 15 — Mise en production : configuration domaine, HTTPS, variables d'environnement, sauvegardes, monitoring, runbook.
+
+RÈGLES DE TRAVAIL
+
+Code en français pour les commentaires utilisateur, anglais pour le code technique (variables, fonctions, fichiers).
+TypeScript strict activé, pas de any sauf justifié.
+Composants réutilisables : si tu utilises un bouton, une card, un modal 2 fois, fais-en un composant.
+Server Components par défaut, Client Components uniquement quand nécessaire (interactivité).
+Validation Zod sur tous les formulaires et inputs API.
+Variables d'environnement dans .env.local, jamais commitées. Documente-les dans .env.example.
+Tests : au minimum sur le calcul du panier, l'auth, le checkout.
+Accessibilité : labels, contrastes, navigation clavier, ARIA quand pertinent.
+Mobile-first : tout doit marcher parfaitement sur mobile (60% du trafic CBD est mobile).
+Documentation : README clair, commentaires sur la logique métier complexe.
+
+
+DÉMARRE MAINTENANT
+Commence par l'étape 1 : analyse le design qui existe déjà dans le projet, fais un audit (technologies utilisées, pages présentes, composants existants, dépendances), puis propose-moi le plan d'architecture technique. Liste-moi aussi les toutes premières clés/comptes dont tu auras besoin pour démarrer (probablement la base de données et l'auth Google).
+Ne demande pas tout d'un coup — demande au fur et à mesure que tu avances, pour ne pas me submerger.
+Quand tu es bloqué sur une décision non-critique, prends-la toi-même en m'expliquant brièvement pourquoi. Je veux avancer vite.
+C'est parti.

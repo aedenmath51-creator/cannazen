@@ -1,0 +1,479 @@
+Tu es un agent de développement. Tu vas construire un e-commerce fonctionnel complet. Je ne veux pas de plan, pas de questions, pas d'explications. Je veux du code qui tourne.
+
+---
+
+## RÈGLE ABSOLUE N°1 — LE DESIGN
+
+Ouvre cette URL dans ton navigateur intégré : **https://www.cannazen.best**
+
+Reproduis ce design **à l'identique, pixel par pixel** :
+- Mêmes couleurs (extrais les hex codes depuis le CSS du site)
+- Même typographie (identifie les polices via les CSS variables ou les font-face)
+- Même layout, mêmes espacements, mêmes composants
+- Mêmes animations et transitions si présentes
+- Même version mobile
+- Si tu vois une image, reproduis le placeholder avec les mêmes dimensions et couleurs
+
+Ne crée rien de nouveau visuellement. Clone. Tout. Tel quel.
+
+---
+
+## RÈGLE ABSOLUE N°2 — NE ME POSE PAS DE QUESTIONS
+
+Quand tu as besoin d'une clé API, d'un identifiant, ou d'une décision :
+1. Continue à coder avec une valeur placeholder en `.env` (`PAYPLUG_KEY=REMPLACER_ICI`)
+2. Mets un commentaire `// TODO: remplacer par la vraie clé` dans le code
+3. Documente tout dans `SETUP.md` à la fin
+4. Ne t'arrête pas. Continue.
+
+---
+
+## RÈGLE ABSOLUE N°3 — NE T'ARRÊTE PAS
+
+Tu codes jusqu'à ce que l'e-commerce soit 100% fonctionnel. Pas de "je vais maintenant faire X", tu le fais directement. Pas de récap intermédiaire. Tu avances.
+
+---
+
+## STACK TECHNIQUE
+
+Utilise exactement ce que le projet Replit utilise déjà. Si c'est React + Vite, reste sur React + Vite. Si c'est Next.js, reste sur Next.js. **N'importe pas de nouvelle techno de base sans raison.**
+
+Pour ce qui n'est pas encore là, utilise :
+- **Base de données** : SQLite via Prisma (pas besoin de compte externe pour démarrer)
+- **Auth** : JWT stocké en cookie httpOnly (pas de NextAuth si pas déjà installé)
+- **Paiement** : intègre PayPlug en mode TEST avec des clés placeholder dans `.env`
+- **Emails** : Nodemailer en mode console.log pour l'instant (on brancha Brevo après)
+- **Images** : stockage local `/public/uploads` pour l'instant
+
+---
+
+## CE QUE TU DOIS LIVRER — DANS CET ORDRE
+
+### ÉTAPE 1 — Clone le design de cannazen.best (fais-le EN PREMIER)
+
+Navigue sur https://www.cannazen.best et clone :
+- La page d'accueil complète
+- La page catalogue/shop
+- La fiche produit
+- Le header et footer
+- La page panier
+- La page de connexion / inscription
+- La page compte client
+
+Utilise les vraies couleurs, polices, images (en placeholders si besoin).
+
+### ÉTAPE 2 — Base de données
+
+Crée le schéma Prisma complet avec ces modèles :
+
+```prisma
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String?
+  googleId      String?  @unique
+  name          String?
+  birthVerified Boolean  @default(false)
+  role          Role     @default(CUSTOMER)
+  loyaltyPoints Int      @default(0)
+  createdAt     DateTime @default(now())
+  orders        Order[]
+  addresses     Address[]
+  reviews       Review[]
+  subscriptions Subscription[]
+}
+
+model Product {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  name          String
+  description   String
+  price         Float
+  comparePrice  Float?
+  stock         Int      @default(0)
+  sku           String   @unique
+  cbdPercent    Float
+  thcPercent    Float    @default(0)
+  batchNumber   String?
+  coaPdfUrl     String?
+  variety       String?
+  origin        String?
+  isOrganic     Boolean  @default(false)
+  weight        Float
+  images        String[]
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  isActive      Boolean  @default(true)
+  isFeatured    Boolean  @default(false)
+  metaTitle     String?
+  metaDesc      String?
+  createdAt     DateTime @default(now())
+  orderItems    OrderItem[]
+  reviews       Review[]
+}
+
+model Category {
+  id           String    @id @default(cuid())
+  name         String
+  slug         String    @unique
+  isActive     Boolean   @default(true)
+  canDisable   Boolean   @default(true)
+  products     Product[]
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String?
+  user            User?       @relation(fields: [userId], references: [id])
+  guestEmail      String?
+  status          OrderStatus @default(PENDING)
+  total           Float
+  shippingCost    Float
+  shippingMethod  String
+  payplugPaymentId String?
+  items           OrderItem[]
+  address         Address?    @relation(fields: [addressId], references: [id])
+  addressId       String?
+  createdAt       DateTime    @default(now())
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+}
+
+model Address {
+  id         String  @id @default(cuid())
+  userId     String
+  user       User    @relation(fields: [userId], references: [id])
+  firstName  String
+  lastName   String
+  line1      String
+  line2      String?
+  city       String
+  postcode   String
+  country    String  @default("FR")
+  isDefault  Boolean @default(false)
+  orders     Order[]
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  rating    Int
+  comment   String?
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  content     String
+  excerpt     String?
+  coverImage  String?
+  metaTitle   String?
+  metaDesc    String?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Subscription {
+  id              String             @id @default(cuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id])
+  status          SubscriptionStatus @default(ACTIVE)
+  planName        String
+  pricePerMonth   Float
+  nextBillingDate DateTime
+  createdAt       DateTime           @default(now())
+}
+
+model PromoCode {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  type        PromoType
+  value       Float
+  minOrder    Float?
+  maxUses     Int?
+  usedCount   Int       @default(0)
+  expiresAt   DateTime?
+  isActive    Boolean   @default(true)
+}
+
+model LoyaltyTransaction {
+  id        String   @id @default(cuid())
+  userId    String
+  points    Int
+  reason    String
+  createdAt DateTime @default(now())
+}
+
+enum Role { CUSTOMER ADMIN }
+enum OrderStatus { PENDING PAID PROCESSING SHIPPED DELIVERED CANCELLED REFUNDED }
+enum SubscriptionStatus { ACTIVE PAUSED CANCELLED }
+enum PromoType { PERCENT FIXED FREE_SHIPPING }
+```
+
+Lance `npx prisma migrate dev` et `npx prisma db seed` avec 10 produits de démo.
+
+### ÉTAPE 3 — Authentification
+
+Implémente :
+- **Inscription email + mot de passe** (hash bcrypt, JWT en cookie httpOnly 30j)
+- **Connexion Google OAuth** (placeholder : `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET` dans `.env`)
+- **Vérification email** (lien token, console.log pour l'instant)
+- **Reset mot de passe** (lien token)
+- **Middleware** qui protège les routes `/account/*` et `/admin/*`
+- **Pop-up vérification d'âge +18** : s'affiche à la première visite (avant tout le reste), stocke `age_verified=true` en cookie 30 jours. Si non vérifié → redirection vers page "Accès refusé". Reproduis le style du site.
+
+### ÉTAPE 4 — Catalogue et fiches produits
+
+- Page `/shop` : grille produits avec filtres (catégorie, prix, taux CBD), tri, pagination
+- Page `/shop/[slug]` : fiche produit complète avec galerie, sélecteur quantité, bouton panier, avis, badge "THC < 0,3%", lien COA PDF si dispo
+- Moteur de recherche live (barre de recherche dans le header)
+- Bouton "Désactiver la catégorie" dans l'admin (pour conformité PLF 2026)
+
+### ÉTAPE 5 — Panier et checkout
+
+- Panier persistant (localStorage + DB si connecté)
+- Page `/cart` : résumé, quantités modifiables, code promo, sélection transporteur, total
+- Checkout 3 étapes (adresse → livraison → paiement) en une seule page avec progress bar
+- Choix transporteur avec calcul automatique au poids :
+  - Colissimo (domicile) : 4,99 € < 500g / 6,99 € < 2kg / 8,99 € +
+  - Mondial Relay (point relais) : 3,49 € < 500g / 4,99 € +
+  - Chronopost (express) : 9,99 € < 500g / 14,99 € +
+  - International EU : 12,99 € < 500g / 19,99 € +
+  - Click & Collect : gratuit
+- Checkout invité possible (email uniquement)
+- **Intégration PayPlug** :
+
+```javascript
+// Installe : npm install payplug
+// Fichier : /api/payment/create-intent.js
+
+import Payplug from 'payplug';
+
+Payplug.setSecretKey(process.env.PAYPLUG_SECRET_KEY);
+
+export async function createPayment(order) {
+  const payment = await Payplug.Payment.create({
+    amount: Math.round(order.total * 100), // en centimes
+    currency: 'EUR',
+    billing: {
+      email: order.email,
+      first_name: order.firstName,
+      last_name: order.lastName,
+      address1: order.address.line1,
+      postcode: order.address.postcode,
+      city: order.address.city,
+      country: order.address.country,
+    },
+    hosted_payment: {
+      return_url: `${process.env.NEXT_PUBLIC_URL}/order/confirmation?orderId=${order.id}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL}/cart`,
+    },
+    notification_url: `${process.env.NEXT_PUBLIC_URL}/api/payment/webhook`,
+    metadata: {
+      order_id: order.id,
+    },
+  });
+  return payment;
+}
+```
+
+```javascript
+// Webhook PayPlug : /api/payment/webhook.js
+// Quand PayPlug confirme le paiement :
+// 1. Met à jour Order.status = PAID
+// 2. Décrémente le stock de chaque produit
+// 3. Envoie l'email de confirmation (console.log pour l'instant)
+// 4. Ajoute les points de fidélité (1 point par euro)
+```
+
+Dans `.env` :
+```
+PAYPLUG_SECRET_KEY=REMPLACER_PAR_CLE_TEST_PAYPLUG
+NEXT_PUBLIC_URL=http://localhost:3000
+```
+
+### ÉTAPE 6 — Espace client `/account`
+
+Pages :
+- `/account` : tableau de bord (commandes récentes, points de fidélité, abonnements actifs)
+- `/account/orders` : historique commandes + statut + tracking
+- `/account/orders/[id]` : détail commande + téléchargement facture PDF
+- `/account/addresses` : gestion adresses
+- `/account/loyalty` : solde points, historique, récompenses disponibles
+- `/account/subscriptions` : mes abonnements actifs, pause, annulation
+- `/account/reviews` : avis laissés en attente de publication
+
+### ÉTAPE 7 — Programme de fidélité
+
+- 1 € = 1 point (configurable en admin)
+- Paliers : Bronze (0–499), Argent (500–1999), Or (2000+)
+- Affichage au checkout : "Vous allez gagner X points avec cette commande"
+- Option "Utiliser mes points" au checkout (100 points = 1 €)
+- Badge niveau dans le compte client
+
+### ÉTAPE 8 — Avis clients
+
+- Formulaire d'avis sur la fiche produit (uniquement si commande livrée)
+- Stars 1–5 + commentaire
+- Modération admin avant publication
+- Envoi automatique email de demande d'avis J+7 après statut "DELIVERED" (console.log pour l'instant)
+- Moyenne étoiles + nombre d'avis sur fiche produit et page catalogue
+
+### ÉTAPE 9 — Blog
+
+- Page `/blog` : liste articles, filtres par catégorie
+- Page `/blog/[slug]` : article avec sidebar produits recommandés
+- Sitemap.xml dynamique incluant les articles et les produits
+
+### ÉTAPE 10 — Abonnements
+
+- Admin peut créer des "box mensuelles" avec un nom, prix, description, produits inclus
+- Client s'abonne depuis la fiche produit ou page dédiée
+- Prélèvement récurrent simulé (console.log pour l'instant, à brancher PayPlug Subscriptions après)
+- Email de rappel J-3 avant prélèvement (console.log)
+
+### ÉTAPE 11 — Chat Crisp
+
+```html
+<!-- Colle ce snippet UNIQUEMENT après consentement cookies -->
+<!-- Placeholder : remplace CRISP_WEBSITE_ID par l'ID réel -->
+<script>
+window.$crisp=[];
+window.CRISP_WEBSITE_ID="REMPLACER_PAR_CRISP_ID";
+(function(){d=document;s=d.createElement("script");
+s.src="https://client.crisp.chat/l.js";
+s.async=1;d.getElementsByTagName("head")[0].appendChild(s);})();
+</script>
+```
+
+N'injecte ce script que si `localStorage.getItem('cookie_analytics') === 'true'`.
+
+### ÉTAPE 12 — Analytics GA4
+
+```javascript
+// Charge uniquement après consentement cookies
+// Placeholder : G-XXXXXXX à remplacer
+if (typeof window !== 'undefined' && window.cookieConsent?.analytics) {
+  const script = document.createElement('script');
+  script.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX';
+  document.head.appendChild(script);
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXX');
+}
+
+// Events e-commerce à envoyer :
+// - view_item (fiche produit)
+// - add_to_cart (ajout panier)
+// - begin_checkout (début checkout)
+// - purchase (confirmation commande, avec revenue et items)
+```
+
+### ÉTAPE 13 — Back-office `/admin`
+
+Protégé par middleware (rôle ADMIN uniquement). Pages :
+
+- `/admin` : dashboard avec KPIs (CA jour/semaine/mois, nb commandes, panier moyen, top 5 produits)
+- `/admin/products` : liste + CRUD + upload image + gestion stock
+- `/admin/categories` : liste + bouton ON/OFF par catégorie (pour conformité réglementaire)
+- `/admin/orders` : liste avec filtres statut + bouton changer statut + remboursement via PayPlug API
+- `/admin/customers` : liste + détail + points de fidélité manuels
+- `/admin/blog` : CRUD articles
+- `/admin/promo` : CRUD codes promo
+- `/admin/reviews` : file de modération (approuver / rejeter)
+- `/admin/subscriptions` : liste abonnements actifs
+- `/admin/settings` : tarifs livraison, taux de change points, email expéditeur
+
+### ÉTAPE 14 — Bandeau cookies CNIL
+
+Composant `<CookieConsent />` :
+- Affiché en bas de page à la première visite
+- 3 catégories : Essentiels (forcé ON), Analytiques (GA4, opt-in), Marketing (opt-in)
+- Stocke les préférences dans `localStorage` + cookie 13 mois
+- Si refus des analytiques → ne charge pas GA4 ni Crisp
+- Lien vers Politique de confidentialité
+
+### ÉTAPE 15 — SEO et performances
+
+- Génère `/sitemap.xml` dynamique (produits + catégories + articles)
+- `/robots.txt` qui bloque `/admin`, `/api`, `/account`
+- Schema.org sur chaque fiche produit (Product, AggregateRating)
+- Schema.org sur chaque article (Article)
+- Open Graph + Twitter Card sur toutes les pages
+- Toutes les images en lazy loading
+- `<title>` et `<meta description>` uniques sur chaque page
+
+### ÉTAPE 16 — SETUP.md final
+
+À la toute fin, crée `SETUP.md` avec la liste complète de tout ce que je dois faire pour passer en production :
+
+```markdown
+# SETUP — Ce que vous devez faire pour mettre Canazen en ligne
+
+## Comptes à créer
+
+### 1. PayPlug (paiement)
+- Allez sur https://www.payplug.com → "Créer un compte"
+- Remplissez le KYC avec : Kbis, pièce d'identité, IBAN, description : "Vente de CBD légal < 0.3% THC, conformément à la décision du Conseil d'État du 29/12/2022"
+- Attendez la validation (5–15 jours)
+- Tableau de bord → Paramètres → API → copiez la clé secrète LIVE
+- Collez dans .env : PAYPLUG_SECRET_KEY=sk_live_...
+
+### 2. Google OAuth (connexion Google)
+- Allez sur https://console.cloud.google.com
+- Créer un projet → APIs & Services → Credentials → OAuth client ID
+- Type : Web application
+- Authorized redirect URI : https://votre-domaine.fr/api/auth/google/callback
+- Copiez Client ID et Client Secret dans .env
+
+### 3. Brevo (emails transactionnels)
+- https://www.brevo.com → créer un compte gratuit
+- Paramètres → API → copier la clé
+- Vérifier le domaine (ajouter les enregistrements DNS SPF, DKIM, DMARC)
+- Remplacer console.log par les vrais appels Brevo dans /lib/email.js
+
+### 4. Crisp (chat)
+- https://crisp.chat → créer un compte → ajouter un site
+- Copier le Website ID
+- Remplacer REMPLACER_PAR_CRISP_ID dans le composant CrispChat
+
+### 5. Google Analytics 4
+- https://analytics.google.com → créer propriété
+- Copier le Measurement ID (G-XXXXXXX)
+- Remplacer G-XXXXXXX dans /lib/analytics.js
+
+### 6. Hébergement
+- Recommandé : Railway, Render ou VPS OVH
+- Variables d'environnement à configurer : toutes celles dans .env.example
+- Base de données : passer de SQLite à PostgreSQL (changer DATABASE_URL dans .env)
+
+## Variables d'environnement complètes
+[liste complète]
+```
+
+---
+
+## COMMENCE MAINTENANT
+
+1. **Ouvre le navigateur intégré Replit**
+2. **Va sur https://www.cannazen.best**
+3. **Inspecte le CSS, les couleurs, les polices**
+4. **Clone le design**
+5. **Continue jusqu'à l'étape 16 sans t'arrêter**
+
+Ne me demande rien. Code.

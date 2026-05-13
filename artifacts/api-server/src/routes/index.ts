@@ -1,0 +1,46 @@
+import { Router, type IRouter } from "express";
+import healthRouter from "./health";
+import productsRouter from "./products";
+import categoriesRouter from "./categories";
+import cartRouter from "./cart";
+import ordersRouter from "./orders";
+import reviewsRouter from "./reviews";
+import wishlistRouter from "./wishlist";
+import newsletterRouter from "./newsletter";
+import authRouter from "./auth";
+import meRouter from "./me";
+import promoRouter from "./promo";
+import blogRouter from "./blog";
+import consentRouter from "./consent";
+import shippingRouter from "./shipping";
+import paymentRouter from "./payment";
+import adminRouter from "./admin";
+import seoRouter from "./seo";
+import chatRouter from "./chat";
+import oauthGoogleRouter from "./oauth-google";
+import shippingSendcloudRouter from "./shipping-sendcloud";
+
+const router: IRouter = Router();
+
+router.use(healthRouter);
+router.use(productsRouter);
+router.use(categoriesRouter);
+router.use(cartRouter);
+router.use(ordersRouter);
+router.use(reviewsRouter);
+router.use(wishlistRouter);
+router.use(newsletterRouter);
+router.use(authRouter);
+router.use("/me", meRouter);
+router.use(promoRouter);
+router.use(blogRouter);
+router.use(consentRouter);
+router.use(shippingRouter);
+router.use(paymentRouter);
+router.use(chatRouter);
+router.use(oauthGoogleRouter);
+router.use(shippingSendcloudRouter);
+router.use(adminRouter);
+router.use(seoRouter);
+
+export default router;

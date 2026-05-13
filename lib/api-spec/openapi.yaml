@@ -1,0 +1,773 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: CannaZen e-commerce API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+  - name: products
+  - name: categories
+  - name: cart
+  - name: orders
+  - name: users
+  - name: reviews
+  - name: wishlist
+  - name: newsletter
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List all products
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [price_asc, price_desc, rating, newest, bestseller]
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Create a product (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductBody"
+      responses:
+        "201":
+          description: Created product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/featured:
+    get:
+      operationId: listFeaturedProducts
+      tags: [products]
+      summary: Get featured/best-seller products
+      responses:
+        "200":
+          description: Featured products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+  /products/stats:
+    get:
+      operationId: getProductStats
+      tags: [products]
+      summary: Get store-wide product stats
+      responses:
+        "200":
+          description: Store stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreStats"
+
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [products]
+      summary: Get product by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /categories:
+    get:
+      operationId: listCategories
+      tags: [categories]
+      summary: List all categories
+      responses:
+        "200":
+          description: Categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+
+  /cart:
+    get:
+      operationId: getCart
+      tags: [cart]
+      summary: Get current cart
+      responses:
+        "200":
+          description: Cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+    post:
+      operationId: addToCart
+      tags: [cart]
+      summary: Add item to cart
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddToCartBody"
+      responses:
+        "200":
+          description: Updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+    delete:
+      operationId: clearCart
+      tags: [cart]
+      summary: Clear cart
+      responses:
+        "200":
+          description: Empty cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+
+  /cart/{itemId}:
+    put:
+      operationId: updateCartItem
+      tags: [cart]
+      summary: Update cart item quantity
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCartItemBody"
+      responses:
+        "200":
+          description: Updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+    delete:
+      operationId: removeFromCart
+      tags: [cart]
+      summary: Remove item from cart
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated cart
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List user orders
+      responses:
+        "200":
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Place an order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderBody"
+      responses:
+        "201":
+          description: Created order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      summary: Get order by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /reviews:
+    get:
+      operationId: listReviews
+      tags: [reviews]
+      summary: List reviews for a product
+      parameters:
+        - name: productId
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Reviews
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Review"
+    post:
+      operationId: createReview
+      tags: [reviews]
+      summary: Create a review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReviewBody"
+      responses:
+        "201":
+          description: Created review
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Review"
+
+  /wishlist:
+    get:
+      operationId: getWishlist
+      tags: [wishlist]
+      summary: Get wishlist
+      responses:
+        "200":
+          description: Wishlist
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WishlistItem"
+    post:
+      operationId: addToWishlist
+      tags: [wishlist]
+      summary: Add to wishlist
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddToWishlistBody"
+      responses:
+        "200":
+          description: Wishlist item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WishlistItem"
+
+  /wishlist/{productId}:
+    delete:
+      operationId: removeFromWishlist
+      tags: [wishlist]
+      summary: Remove from wishlist
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /newsletter/subscribe:
+    post:
+      operationId: subscribeNewsletter
+      tags: [newsletter]
+      summary: Subscribe to newsletter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsletterSubscribeBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /quiz/result:
+    post:
+      operationId: getQuizResult
+      tags: [products]
+      summary: Get recommended products based on quiz answers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizResultBody"
+      responses:
+        "200":
+          description: Recommended products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+
+    SuccessResponse:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+    StoreStats:
+      type: object
+      required: [totalProducts, totalCategories, averageRating, totalReviews]
+      properties:
+        totalProducts:
+          type: integer
+        totalCategories:
+          type: integer
+        averageRating:
+          type: number
+        totalReviews:
+          type: integer
+
+    Category:
+      type: object
+      required: [id, name, slug, productCount]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        productCount:
+          type: integer
+        imageUrl:
+          type: string
+
+    Product:
+      type: object
+      required: [id, name, slug, price, categoryId, categorySlug, categoryName, inStock]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        compareAtPrice:
+          type: number
+        imageUrl:
+          type: string
+        categoryId:
+          type: integer
+        categorySlug:
+          type: string
+        categoryName:
+          type: string
+        strain:
+          type: string
+        thcContent:
+          type: string
+        cbdContent:
+          type: string
+        origin:
+          type: string
+        weight:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        rating:
+          type: number
+        reviewCount:
+          type: integer
+        isBestseller:
+          type: boolean
+        isNew:
+          type: boolean
+        inStock:
+          type: boolean
+        stock:
+          type: integer
+
+    CreateProductBody:
+      type: object
+      required: [name, price, categoryId]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        categoryId:
+          type: integer
+        imageUrl:
+          type: string
+        strain:
+          type: string
+        thcContent:
+          type: string
+        cbdContent:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        stock:
+          type: integer
+
+    Cart:
+      type: object
+      required: [id, sessionId, items, subtotal, total, itemCount]
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItem"
+        subtotal:
+          type: number
+        total:
+          type: number
+        shipping:
+          type: number
+        discount:
+          type: number
+        itemCount:
+          type: integer
+
+    CartItem:
+      type: object
+      required: [id, cartId, productId, quantity, unitPrice, totalPrice, product]
+      properties:
+        id:
+          type: integer
+        cartId:
+          type: integer
+        productId:
+          type: integer
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+        totalPrice:
+          type: number
+        product:
+          $ref: "#/components/schemas/Product"
+
+    AddToCartBody:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId:
+          type: integer
+        quantity:
+          type: integer
+        sessionId:
+          type: string
+
+    UpdateCartItemBody:
+      type: object
+      required: [quantity]
+      properties:
+        quantity:
+          type: integer
+
+    Order:
+      type: object
+      required: [id, sessionId, status, items, subtotal, total, createdAt]
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, shipped, delivered, cancelled]
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        subtotal:
+          type: number
+        shipping:
+          type: number
+        discount:
+          type: number
+        total:
+          type: number
+        shippingAddress:
+          type: string
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    OrderItem:
+      type: object
+      required: [id, orderId, productId, quantity, unitPrice, totalPrice, productName]
+      properties:
+        id:
+          type: integer
+        orderId:
+          type: integer
+        productId:
+          type: integer
+        quantity:
+          type: integer
+        unitPrice:
+          type: number
+        totalPrice:
+          type: number
+        productName:
+          type: string
+        productImageUrl:
+          type: string
+
+    CreateOrderBody:
+      type: object
+      required: [sessionId, firstName, lastName, email, shippingAddress]
+      properties:
+        sessionId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        shippingAddress:
+          type: string
+        paymentMethod:
+          type: string
+
+    Review:
+      type: object
+      required: [id, productId, authorName, rating, createdAt]
+      properties:
+        id:
+          type: integer
+        productId:
+          type: integer
+        authorName:
+          type: string
+        authorLocation:
+          type: string
+        rating:
+          type: integer
+        body:
+          type: string
+        productVariant:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateReviewBody:
+      type: object
+      required: [productId, authorName, rating]
+      properties:
+        productId:
+          type: integer
+        authorName:
+          type: string
+        authorLocation:
+          type: string
+        rating:
+          type: integer
+        body:
+          type: string
+        productVariant:
+          type: string
+
+    WishlistItem:
+      type: object
+      required: [id, sessionId, productId, product, addedAt]
+      properties:
+        id:
+          type: integer
+        sessionId:
+          type: string
+        productId:
+          type: integer
+        product:
+          $ref: "#/components/schemas/Product"
+        addedAt:
+          type: string
+          format: date-time
+
+    AddToWishlistBody:
+      type: object
+      required: [productId]
+      properties:
+        productId:
+          type: integer
+
+    NewsletterSubscribeBody:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+
+    QuizResultBody:
+      type: object
+      required: [mood]
+      properties:
+        mood:
+          type: string
+          enum: [serenity, energy, sleep, focus]
+        goal:
+          type: string
+          nullable: true
+          description: Raw answer to first quiz question
+        experience:
+          type: string
+          nullable: true
+          description: User CBD experience level
+        format:
+          type: string
+          nullable: true
+          description: Preferred consumption format

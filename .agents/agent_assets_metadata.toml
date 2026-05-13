@@ -1,0 +1,193 @@
+uploads = []
+
+[[generated]]
+id = "6ZkGgHRR64qq4f7zGmOk9"
+uri = "file://artifacts/cannazen/public/products/p11-snow-white.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "XEemvUGfP0YzAGwc3gBvC"
+uri = "file://artifacts/cannazen/public/products/p12-purple-haze.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "7KFtjIr8dwyDqJ4qOsi7W"
+uri = "file://artifacts/cannazen/public/products/p16-early-girl.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "1d9C5CuXa8UaJB0vM8MgV"
+uri = "file://artifacts/cannazen/public/products/p17-white-widow.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "B_sTGisArJf-4xszMYTRD"
+uri = "file://artifacts/cannazen/public/products/p18-gummies-cereal.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "8JYW-NG9SEgL5s0Iy5RtX"
+uri = "file://artifacts/cannazen/public/products/p19-gummies-huckleberry.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "zejuHHbnxi9RTNjb6RxP8"
+uri = "file://artifacts/cannazen/public/products/p1-amnesia-haze.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "YUAV49ULoTaM01sRAa4jt"
+uri = "file://artifacts/cannazen/public/products/p2-small-buds-cinnamon.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "CIzNgXccoC6xm2dIhVu0G"
+uri = "file://artifacts/cannazen/public/products/p3-gelato-indoor.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "M0UhuB-eiI7WgGc5HMssS"
+uri = "file://artifacts/cannazen/public/products/p4-og-kush.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "PHKa-1zom5l1s07vSzxoo"
+uri = "file://artifacts/cannazen/public/products/p5-huile-10.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "-ct4RSmrY1UsAUvplqeWY"
+uri = "file://artifacts/cannazen/public/products/p6-huile-5.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "UJedt9SJBcmzvWa8kYBPY"
+uri = "file://artifacts/cannazen/public/products/p7-hash-pollen.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "xOJeDoHQI6I_z4Oj0BEIs"
+uri = "file://artifacts/cannazen/public/products/p8-charas.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "ZYtnqYYYO8-XILgVu57MT"
+uri = "file://artifacts/cannazen/public/products/p9-wapanga.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "KH-mKLcRz3pA5jvq35rbz"
+uri = "file://artifacts/cannazen/public/products/p10-zoap.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "vQNe2fPu6Iiglin3ZPdSP"
+uri = "file://artifacts/cannazen/public/products/p13-vape-blueberry.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "FkiE9xC3mm0G73RbuH4eQ"
+uri = "file://artifacts/cannazen/public/products/p14-vape-mango.png"
+type = "image"
+title = "generated_image"
+
+[[generated]]
+id = "3-c9jqgCGgzuj4_eQoQtB"
+uri = "file://artifacts/cannazen/public/products/p15-vape-mint.png"
+type = "image"
+title = "generated_image"
+
+[[outputs]]
+id = "OGoa3EjfobhGbAVTLbWYy"
+uri = "file://.local/preview-shots/01-home.png"
+type = "image"
+title = "1. Page d'accueil (homepage après age gate)"
+
+[[outputs]]
+id = "A87FI-t-ldFlVrvw3MHfe"
+uri = "file://.local/preview-shots/02-boutique.png"
+type = "image"
+title = "2. Boutique - grille produits"
+
+[[outputs]]
+id = "tzCryCljISiPRPTalb39V"
+uri = "file://.local/preview-shots/03-product.png"
+type = "image"
+title = "3. Fiche produit avec COA + n° lot"
+
+[[outputs]]
+id = "p_VtEt9_7VeOJyjFMhux1"
+uri = "file://.local/preview-shots/04-blog.png"
+type = "image"
+title = "4. Blog SEO"
+
+[[outputs]]
+id = "wm1eMtgcbjE84OEUSGZNm"
+uri = "file://.local/preview-shots/05-admin.png"
+type = "image"
+title = "5. Admin /console-cz (admin@cannazen.fr)"
+
+[[outputs]]
+id = "ZwhI1uCbO7j5H98unUv_Y"
+uri = "file://.local/preview-shots/dark-home.png"
+type = "image"
+title = "Mode sombre - Accueil"
+
+[[outputs]]
+id = "JPeMu81gDYBpf-TO6L_vg"
+uri = "file://.local/preview-shots/light-home.png"
+type = "image"
+title = "Mode clair - Accueil"
+
+[[outputs]]
+id = "dwGryQBbgpQQZC4nutyEp"
+uri = "file://.local/preview-shots/dark-boutique.png"
+type = "image"
+title = "Mode sombre - Boutique"
+
+[[outputs]]
+id = "nzvdFFTV95Xb9yoE8NTdu"
+uri = "file://.local/preview-shots/light-boutique.png"
+type = "image"
+title = "Mode clair - Boutique"
+
+[[outputs]]
+id = "mgsDzDtlQ1sjElIJYJzOh"
+uri = "file://.local/preview-shots/clone-home-light.png"
+type = "image"
+title = "Accueil — clone clair avec sidebar"
+
+[[outputs]]
+id = "t2Q_m8fiV_wlwzViauvcj"
+uri = "file://.local/preview-shots/clone-shop.png"
+type = "image"
+title = "Boutique — photos IA générées"
+
+[[outputs]]
+id = "cERHbsNiEyX91Lb1G5Z_b"
+uri = "file://.local/preview-shots/clone-chat-open.png"
+type = "image"
+title = "Bulle de chat verte ouverte"
+
+[[outputs]]
+id = "5R5JoM2eur3QDdMRzdGp4"
+uri = "file://.local/preview-shots/clone-shop-dark.png"
+type = "image"
+title = "Mode sombre toujours dispo"
