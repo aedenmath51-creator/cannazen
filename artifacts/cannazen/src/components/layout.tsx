@@ -11,15 +11,6 @@ import {
   LogOut,
   Sun,
   Moon,
-  Home,
-  Store,
-  Sparkles,
-  MapPin,
-  Gift,
-  Award,
-  Heart,
-  User,
-  Info,
   Search,
 } from "lucide-react";
 import { LotusLogo } from "@/components/lotus-logo";
@@ -28,8 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { motion, AnimatePresence } from "framer-motion";
 import { CookieBanner } from "@/components/cookie-banner";
-// Lazy-loaded: FloatingChat (only opens on user click) and ThirdPartyLoaders
-// (only matters after consent given) — keep them out of the critical path.
 const FloatingChat = lazy(() =>
   import("@/components/floating-chat").then((m) => ({ default: m.FloatingChat })),
 );
@@ -37,18 +26,35 @@ const ThirdPartyLoaders = lazy(() =>
   import("@/components/third-party-loaders").then((m) => ({ default: m.ThirdPartyLoaders })),
 );
 
-type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
+type NavGroup = {
+  label?: string;
+  items: { href: string; label: string; sub?: string }[];
+};
 
-const NAV: NavItem[] = [
-  { href: "/", label: "Accueil", icon: Home },
-  { href: "/boutique", label: "Boutique", icon: Store },
-  { href: "/quiz", label: "Quiz CBD", icon: Sparkles },
-  { href: "/nos-terroirs", label: "Terroirs", icon: MapPin },
-  { href: "/coffrets", label: "Coffrets", icon: Gift },
-  { href: "/mon-compte/fidelite", label: "Fidélité", icon: Award },
-  { href: "/wishlist", label: "Favoris", icon: Heart },
-  { href: "/mon-compte", label: "Mon Compte", icon: User },
-  { href: "/a-propos", label: "À propos", icon: Info },
+const NAV_GROUPS: NavGroup[] = [
+  {
+    items: [
+      { href: "/", label: "Accueil" },
+      { href: "/boutique", label: "Boutique", sub: "19 produits" },
+      { href: "/quiz", label: "Quiz CBD", sub: "trouvez votre soin" },
+    ],
+  },
+  {
+    label: "Explorer",
+    items: [
+      { href: "/nos-terroirs", label: "Nos Terroirs" },
+      { href: "/coffrets", label: "Coffrets" },
+      { href: "/blog", label: "Journal" },
+    ],
+  },
+  {
+    label: "Espace",
+    items: [
+      { href: "/wishlist", label: "Favoris" },
+      { href: "/mon-compte/fidelite", label: "Fidélité" },
+      { href: "/mon-compte", label: "Mon Compte" },
+    ],
+  },
 ];
 
 function SidebarContent({
@@ -66,6 +72,7 @@ function SidebarContent({
 }) {
   const [, setLoc] = useLocation();
   const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchFocused, setSearchFocused] = React.useState(false);
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,68 +84,158 @@ function SidebarContent({
   };
 
   return (
-    <div className="flex flex-col h-full bg-card/60 backdrop-blur-sm border-r border-border/50">
-      <div className="px-6 pt-7 pb-5 flex items-center justify-between">
-        <Link href="/" className="flex items-baseline gap-1.5 group" onClick={onNavigate} data-testid="logo">
-          <LotusLogo size={16} className="text-secondary -translate-y-0.5" />
-          <span className="font-serif italic text-2xl tracking-wide text-foreground group-hover:text-primary transition-colors">
-            Canna<span className="text-primary">Zen</span>
-          </span>
-        </Link>
-        <button
-          onClick={toggleTheme}
-          className="h-9 w-9 rounded-full border border-border/60 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
-          data-testid="theme-toggle"
-          aria-label={theme === "dark" ? "Activer le mode clair" : "Activer le mode sombre"}
-          title={theme === "dark" ? "Mode clair" : "Mode sombre"}
-        >
-          {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </button>
-      </div>
+    <div className="flex flex-col h-full relative overflow-hidden">
+      {/* Ambient background */}
+      <div className="absolute inset-0 bg-card/50 backdrop-blur-xl border-r border-border/30" />
+      <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-secondary/8 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
 
-      <form onSubmit={submitSearch} className="px-4 pb-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/70" />
-          <input
-            type="search"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Rechercher…"
-            className="w-full h-9 pl-9 pr-3 rounded-full text-sm bg-background/60 border border-border/50 placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/40 focus:bg-background transition-colors"
-            data-testid="sidebar-search"
-            aria-label="Rechercher un produit"
-          />
-        </div>
-      </form>
-
-      <nav className="flex-1 px-3 pt-1 pb-4 space-y-1 overflow-y-auto">
-        {NAV.map((item) => {
-          const isActive =
-            item.href === "/" ? location === "/" : location === item.href || location.startsWith(item.href + "/");
-          const Icon = item.icon;
-          return (
-            <Link key={item.href} href={item.href} onClick={onNavigate}>
-              <span
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                  isActive
-                    ? "bg-secondary/10 text-secondary-foreground border border-secondary/20"
-                    : "text-foreground/70 hover:text-foreground hover:bg-muted/60 border border-transparent"
-                }`}
-                data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
-              >
-                <Icon className={`h-4 w-4 ${isActive ? "text-secondary" : "text-muted-foreground"}`} />
-                <span>{item.label}</span>
+      <div className="relative flex flex-col h-full">
+        {/* Logo */}
+        <div className="px-7 pt-8 pb-6 flex items-center justify-between">
+          <Link href="/" onClick={onNavigate} data-testid="logo">
+            <motion.div
+              className="flex items-baseline gap-2 group cursor-pointer"
+              whileHover={{ x: 2 }}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            >
+              <LotusLogo size={18} className="text-secondary -translate-y-0.5 group-hover:text-primary transition-colors duration-300" />
+              <span className="font-serif italic text-2xl tracking-wide text-foreground group-hover:text-primary transition-colors duration-300">
+                Canna<span className="text-primary">Zen</span>
               </span>
-            </Link>
-          );
-        })}
-      </nav>
+            </motion.div>
+          </Link>
+          <motion.button
+            onClick={toggleTheme}
+            whileHover={{ rotate: 15, scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground/60 hover:text-primary transition-colors"
+            data-testid="theme-toggle"
+            aria-label={theme === "dark" ? "Mode clair" : "Mode sombre"}
+          >
+            {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+          </motion.button>
+        </div>
 
-      <div className="px-6 py-5 border-t border-border/40 text-xs text-muted-foreground/70">
-        <p>&copy; {new Date().getFullYear()} CannaZen</p>
-        {isAuthenticated && (
-          <p className="mt-1 text-[10px] uppercase tracking-widest text-muted-foreground/50">Membre connecté</p>
-        )}
+        {/* Search */}
+        <div className="px-5 pb-5">
+          <form onSubmit={submitSearch}>
+            <motion.div
+              animate={{ borderColor: searchFocused ? "rgba(201,168,76,0.5)" : "rgba(128,128,128,0.2)" }}
+              transition={{ duration: 0.2 }}
+              className="relative flex items-center rounded-2xl border bg-background/40 overflow-hidden"
+            >
+              <Search className="absolute left-3.5 h-3.5 w-3.5 text-muted-foreground/50 pointer-events-none" />
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+                placeholder="Rechercher…"
+                className="w-full h-9 pl-9 pr-3 text-sm bg-transparent placeholder:text-muted-foreground/40 focus:outline-none text-foreground"
+                data-testid="sidebar-search"
+                aria-label="Rechercher un produit"
+              />
+            </motion.div>
+          </form>
+        </div>
+
+        {/* Divider */}
+        <div className="mx-6 mb-5 h-px bg-gradient-to-r from-transparent via-border/60 to-transparent" />
+
+        {/* Navigation */}
+        <nav className="flex-1 px-5 pb-4 overflow-y-auto space-y-6">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={gi}>
+              {group.label && (
+                <p className="px-2 mb-2.5 text-[9px] font-medium tracking-[0.2em] uppercase text-muted-foreground/40">
+                  {group.label}
+                </p>
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item, ii) => {
+                  const isActive =
+                    item.href === "/"
+                      ? location === "/"
+                      : location === item.href || location.startsWith(item.href + "/");
+                  return (
+                    <Link key={item.href} href={item.href} onClick={onNavigate}>
+                      <motion.div
+                        className="relative px-3 py-2.5 rounded-xl cursor-pointer group overflow-hidden"
+                        whileHover="hover"
+                        initial={false}
+                        data-testid={`nav-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+                      >
+                        {/* Active / hover background */}
+                        <AnimatePresence>
+                          {isActive && (
+                            <motion.div
+                              layoutId="nav-pill"
+                              className="absolute inset-0 rounded-xl bg-primary/8 border border-primary/15"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                            />
+                          )}
+                        </AnimatePresence>
+                        <motion.div
+                          variants={{ hover: { backgroundColor: "rgba(201,168,76,0.05)" } }}
+                          className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        />
+
+                        {/* Active left bar */}
+                        <AnimatePresence>
+                          {isActive && (
+                            <motion.div
+                              layoutId="nav-bar"
+                              className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-full bg-primary"
+                              initial={{ scaleY: 0 }}
+                              animate={{ scaleY: 1 }}
+                              exit={{ scaleY: 0 }}
+                              transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                            />
+                          )}
+                        </AnimatePresence>
+
+                        <div className="relative flex items-baseline justify-between">
+                          <span
+                            className={`font-serif italic text-[15px] transition-colors duration-200 ${
+                              isActive
+                                ? "text-primary"
+                                : "text-foreground/70 group-hover:text-foreground"
+                            }`}
+                          >
+                            {item.label}
+                          </span>
+                          {item.sub && !isActive && (
+                            <span className="text-[9px] tracking-wide text-muted-foreground/40 font-sans normal-case not-italic">
+                              {item.sub}
+                            </span>
+                          )}
+                        </div>
+                      </motion.div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* Footer */}
+        <div className="px-7 py-5 border-t border-border/25">
+          <p className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground/35">
+            &copy; {new Date().getFullYear()} CannaZen
+          </p>
+          {isAuthenticated && (
+            <p className="mt-0.5 text-[9px] tracking-[0.15em] uppercase text-primary/40">
+              Membre connecté
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -164,10 +261,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     document.body.style.overflow = "hidden";
     const focusTimer = setTimeout(() => primaryButtonRef.current?.focus(), 100);
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        return;
-      }
+      if (e.key === "Escape") { e.preventDefault(); return; }
       if (e.key === "Tab" && gateContainerRef.current) {
         const focusables = gateContainerRef.current.querySelectorAll<HTMLElement>(
           'button, [href], input, [tabindex]:not([tabindex="-1"])'
@@ -175,13 +269,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         if (focusables.length === 0) return;
         const first = focusables[0];
         const last = focusables[focusables.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
       }
     };
     document.addEventListener("keydown", handleKeyDown);
@@ -194,19 +283,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
   }, [isAgeGateOpen]);
 
   const handleAgeConfirm = (isOver18: boolean) => {
-    if (isOver18) {
-      setAgeVerified(true);
-      setIsAgeGateOpen(false);
-    } else setUnderageMessage(true);
+    if (isOver18) { setAgeVerified(true); setIsAgeGateOpen(false); }
+    else setUnderageMessage(true);
   };
 
   const { data: cart } = useGetCart();
-
   const isAdminRoute = location.startsWith("/console-cz");
 
   return (
     <div className="min-h-[100dvh] flex relative overflow-x-hidden">
-      {/* Soft warm gradient background */}
+      {/* Ambient gradient background */}
       <div className="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-secondary/5" />
         <div className="absolute top-[-20%] left-[40%] w-[60%] h-[60%] rounded-full bg-secondary/8 blur-[140px] animate-[glow-drift_25s_ease-in-out_infinite_alternate]" />
@@ -214,6 +300,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="absolute top-[30%] right-[-15%] w-[45%] h-[45%] rounded-full bg-secondary/6 blur-[160px] animate-[glow-drift_35s_ease-in-out_infinite_alternate]" />
       </div>
 
+      {/* Age gate */}
       <AnimatePresence>
         {isAgeGateOpen && !isAdminRoute && (
           <motion.div
@@ -279,14 +366,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
               )}
               <div className="w-full h-px bg-gradient-to-r from-transparent via-border to-transparent mb-8" />
               <div className="flex items-center justify-center gap-6 text-xs font-medium tracking-widest uppercase text-muted-foreground/70">
-                <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  <span>THC &lt; 0.3%</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Check className="h-4 w-4" />
-                  <span>CANNABIS LÉGAL</span>
-                </div>
+                <div className="flex items-center gap-2"><Shield className="h-4 w-4" /><span>THC &lt; 0.3%</span></div>
+                <div className="flex items-center gap-2"><Check className="h-4 w-4" /><span>CANNABIS LÉGAL</span></div>
               </div>
             </motion.div>
           </motion.div>
@@ -295,7 +376,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Desktop sidebar */}
       {!isAdminRoute && (
-        <aside className="hidden md:flex w-[240px] flex-shrink-0 fixed left-0 top-0 bottom-0 z-30">
+        <aside className="hidden md:flex w-[220px] flex-shrink-0 fixed left-0 top-0 bottom-0 z-30">
           <SidebarContent
             location={location}
             isAuthenticated={isAuthenticated}
@@ -309,12 +390,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div
         className={`flex-1 min-w-0 max-w-full overflow-x-hidden flex flex-col min-h-[100dvh] transition-all duration-700 ${
           isAgeGateOpen && !isAdminRoute ? "blur-md grayscale-[0.3] opacity-40 pointer-events-none" : ""
-        } ${!isAdminRoute ? "md:ml-[240px]" : ""}`}
+        } ${!isAdminRoute ? "md:ml-[220px]" : ""}`}
       >
-        {/* Mobile top bar (sidebar trigger + cart) */}
+        {/* Mobile top bar */}
         {!isAdminRoute && (
-          <header className="md:hidden sticky top-0 z-40 w-full border-b border-border/40 bg-background/70 backdrop-blur-md">
-            <div className="px-4 h-16 flex items-center justify-between">
+          <header className="md:hidden sticky top-0 z-40 w-full border-b border-border/30 bg-background/70 backdrop-blur-md">
+            <div className="px-4 h-14 flex items-center justify-between">
               <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-primary">
@@ -322,7 +403,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <span className="sr-only">Menu</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[280px] p-0">
+                <SheetContent side="left" className="w-[260px] p-0 border-0">
                   <SheetTitle className="sr-only">Navigation</SheetTitle>
                   <SidebarContent
                     location={location}
@@ -334,7 +415,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </SheetContent>
               </Sheet>
               <Link href="/" className="flex items-baseline gap-1.5">
-                <LotusLogo size={16} className="text-secondary -translate-y-0.5" />
+                <LotusLogo size={15} className="text-secondary -translate-y-0.5" />
                 <span className="font-serif italic text-xl tracking-wide">
                   Canna<span className="text-primary">Zen</span>
                 </span>
@@ -354,7 +435,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </header>
         )}
 
-        {/* Floating cart + auth (desktop) */}
+        {/* Floating actions (desktop) */}
         {!isAdminRoute && (
           <div className="hidden md:flex fixed top-5 right-6 z-30 items-center gap-2">
             {isAuthenticated ? (
@@ -387,7 +468,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative h-10 w-10 rounded-full border border-border/60 bg-card/70 backdrop-blur-sm text-foreground hover:text-primary hover:border-primary/40 transition-colors"
+                className="relative h-10 w-10 rounded-full border border-border/50 bg-card/60 backdrop-blur-sm text-foreground hover:text-primary hover:border-primary/40 transition-all duration-300"
                 data-testid="cart-icon"
               >
                 <ShoppingBag className="h-4 w-4" />
@@ -411,7 +492,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <main className="flex-1 flex flex-col">{children}</main>
 
         {!isAdminRoute && (
-          <footer className="border-t border-border/40 bg-background/40 backdrop-blur-sm relative z-10 mt-auto">
+          <footer className="border-t border-border/30 bg-background/40 backdrop-blur-sm relative z-10 mt-auto">
             <div className="container mx-auto px-6 py-12">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-10">
                 <div className="col-span-2 md:col-span-1 space-y-4">
@@ -426,7 +507,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </p>
                 </div>
                 <div>
-                  <h3 className="font-serif text-base text-primary mb-5">Boutique</h3>
+                  <h3 className="font-serif italic text-base text-primary mb-5">Boutique</h3>
                   <ul className="space-y-2.5 text-sm text-muted-foreground">
                     <li><Link href="/boutique?category=fleurs-cbd" className="hover:text-primary transition-colors">Fleurs CBD</Link></li>
                     <li><Link href="/boutique?category=huiles-cbd" className="hover:text-primary transition-colors">Huiles</Link></li>
@@ -435,7 +516,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-serif text-base text-primary mb-5">Informations</h3>
+                  <h3 className="font-serif italic text-base text-primary mb-5">Explorer</h3>
                   <ul className="space-y-2.5 text-sm text-muted-foreground">
                     <li><Link href="/a-propos" className="hover:text-primary transition-colors">À propos</Link></li>
                     <li><Link href="/nos-terroirs" className="hover:text-primary transition-colors">Nos terroirs</Link></li>
@@ -444,7 +525,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-serif text-base text-primary mb-5">Légal</h3>
+                  <h3 className="font-serif italic text-base text-primary mb-5">Légal</h3>
                   <ul className="space-y-2.5 text-sm text-muted-foreground">
                     <li><Link href="/cgv" className="hover:text-primary transition-colors">CGV</Link></li>
                     <li><Link href="/confidentialite" className="hover:text-primary transition-colors">Confidentialité</Link></li>
@@ -453,9 +534,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </ul>
                 </div>
               </div>
-              <div className="mt-10 pt-6 border-t border-border/30 text-center text-xs text-muted-foreground/70">
+              <div className="mt-10 pt-6 border-t border-border/25 text-center text-xs text-muted-foreground/60">
                 <p>&copy; {new Date().getFullYear()} CannaZen — Tous droits réservés. Produits réservés aux +18 ans.</p>
-                <p className="mt-1.5 text-[10px] flex items-center justify-center gap-1.5 text-muted-foreground/50 uppercase tracking-widest">
+                <p className="mt-1.5 text-[10px] flex items-center justify-center gap-1.5 text-muted-foreground/40 uppercase tracking-widest">
                   <Shield className="w-3 h-3" /> THC &lt; 0.3% — Cannabis légal certifié
                 </p>
               </div>
@@ -466,13 +547,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {!isAdminRoute && <CookieBanner />}
       {!isAdminRoute && (
-        <Suspense fallback={null}>
-          <FloatingChat />
-        </Suspense>
+        <Suspense fallback={null}><FloatingChat /></Suspense>
       )}
-      <Suspense fallback={null}>
-        <ThirdPartyLoaders />
-      </Suspense>
+      <Suspense fallback={null}><ThirdPartyLoaders /></Suspense>
     </div>
   );
 }
