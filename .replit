@@ -38,3 +38,13 @@ externalPort = 3000
 [nix]
 channel = "stable-25_05"
 packages = ["zip"]
+
+[userenv]
+
+[userenv.shared]
+NODE_ENV = "development"
+PAYMENT_PROVIDER = "mock"
+EMAIL_PROVIDER = "console"
+ADMIN_EMAIL = "admin@cannazen.fr"
+ADMIN_PASSWORD = "ChangeMe!Cannazen2026"
+GROQ_MODEL = "llama-3.3-70b-versatile"
