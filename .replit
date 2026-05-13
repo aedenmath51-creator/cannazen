@@ -43,8 +43,10 @@ packages = ["zip"]
 
 [userenv.shared]
 NODE_ENV = "development"
-PAYMENT_PROVIDER = "mock"
-EMAIL_PROVIDER = "console"
+PAYMENT_PROVIDER = "mollie"
+EMAIL_PROVIDER = "brevo"
 ADMIN_EMAIL = "admin@cannazen.fr"
 ADMIN_PASSWORD = "ChangeMe!Cannazen2026"
 GROQ_MODEL = "llama-3.3-70b-versatile"
+BREVO_SENDER_EMAIL = "contact@cannazen.fr"
+BREVO_SENDER_NAME = "CannaZen"

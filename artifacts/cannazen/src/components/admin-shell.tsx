@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -22,8 +22,12 @@ export function AdminShell({ children, title, actions }: { children: React.React
   const { user, isLoading, isAdmin, logout } = useAuth();
   const [location, setLocation] = useLocation();
 
+  useEffect(() => {
+    if (!isLoading && !user) setLocation("/console-cz/login");
+  }, [isLoading, user, setLocation]);
+
   if (isLoading) return <div className="p-32 text-center"><div className="w-8 h-8 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>;
-  if (!user) { setLocation("/console-cz/login"); return null; }
+  if (!user) return null;
   if (!isAdmin) {
     return (
       <div className="container mx-auto px-6 py-32 text-center">

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -17,11 +17,12 @@ export function AccountShell({ children, title }: { children: React.ReactNode; t
   const { user, isLoading, logout } = useAuth();
   const [location, setLocation] = useLocation();
 
+  useEffect(() => {
+    if (!isLoading && !user) setLocation("/connexion");
+  }, [isLoading, user, setLocation]);
+
   if (isLoading) return <div className="p-32 text-center"><div className="w-8 h-8 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>;
-  if (!user) {
-    setLocation("/connexion");
-    return null;
-  }
+  if (!user) return null;
 
   return (
     <div className="container mx-auto px-6 py-16 max-w-7xl">

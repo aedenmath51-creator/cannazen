@@ -180,14 +180,19 @@ router.get("/products/stats", async (_req, res) => {
 });
 
 router.get("/products/:id", async (req, res) => {
-  const parsed = GetProductParams.safeParse({ id: Number(req.params.id) });
-  if (!parsed.success) return res.status(400).json({ message: "Invalid id" });
+  const rawId = req.params.id;
+  const numericId = Number(rawId);
+  const isNumeric = !Number.isNaN(numericId) && String(numericId) === rawId;
+
+  const condition = isNumeric
+    ? and(eq(productsTable.id, numericId), eq(productsTable.isActive, true))
+    : and(eq(productsTable.slug, rawId), eq(productsTable.isActive, true));
 
   const [product] = await db
     .select(productFields)
     .from(productsTable)
     .leftJoin(categoriesTable, eq(productsTable.categoryId, categoriesTable.id))
-    .where(and(eq(productsTable.id, parsed.data.id), eq(productsTable.isActive, true)));
+    .where(condition);
 
   if (!product) return res.status(404).json({ message: "Product not found" });
   return res.json(formatProduct(product));
