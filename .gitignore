@@ -47,3 +47,12 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Secrets — ne jamais committer
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Fichiers de backup
+*.bak
