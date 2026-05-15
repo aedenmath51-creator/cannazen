@@ -1,199 +1,348 @@
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
-import { useGetQuizResult } from "@workspace/api-client-react";
-import { Button } from "@/components/ui/button";
-import { Leaf, Sparkles, Moon, ShieldCheck, ArrowRight, ArrowLeft } from "lucide-react";
-import { ProductCard } from "@/components/product-card";
-import { motion, AnimatePresence } from "framer-motion";
+import { useLocation } from "wouter";
 
 const QUESTIONS = [
   {
-    id: "goal",
-    title: "Quel est votre objectif principal ?",
+    id: "objective",
+    question: "Quel est votre objectif principal ?",
     options: [
-      { id: "relax", label: "Me détendre profondément", icon: Leaf },
-      { id: "sleep", label: "Mieux dormir", icon: Moon },
-      { id: "focus", label: "Améliorer ma concentration", icon: ShieldCheck },
-      { id: "energy", label: "Retrouver de l'énergie", icon: Sparkles }
-    ]
-  },
-  {
-    id: "experience",
-    title: "Quelle est votre expérience avec le CBD ?",
-    options: [
-      { id: "beginner", label: "Je découvre" },
-      { id: "intermediate", label: "Consommateur occasionnel" },
-      { id: "advanced", label: "Consommateur régulier" }
-    ]
+      { value: "relax",    label: "Me détendre",          desc: "Réduire le stress et l'anxiété au quotidien" },
+      { value: "sleep",    label: "Mieux dormir",          desc: "Favoriser un sommeil profond et réparateur" },
+      { value: "focus",    label: "Me concentrer",         desc: "Rester alerte et productif sans nervosité" },
+      { value: "energy",   label: "Retrouver de l'énergie",desc: "Lutter contre la fatigue et la léthargie" },
+      { value: "pleasure", label: "Plaisir et euphorie",   desc: "Rechercher un effet récréatif légal" },
+    ],
   },
   {
     id: "format",
-    title: "Quel format préférez-vous ?",
+    question: "Comment préférez-vous consommer ?",
     options: [
-      { id: "flower", label: "Fleurs à infuser" },
-      { id: "oil", label: "Huiles sublinguales" },
-      { id: "resin", label: "Résines" },
-      { id: "vape", label: "Vaporisateurs" }
-    ]
-  }
+      { value: "oil",      label: "Huile sublinguale",     desc: "Précise, rapide, discrète — quelques gouttes" },
+      { value: "flower",   label: "Fleurs CBD",            desc: "Expérience naturelle et aromatique" },
+      { value: "infusion", label: "Infusion",              desc: "Rituel apaisant, effet doux et progressif" },
+      { value: "capsule",  label: "Gélules ou capsules",   desc: "Pratique, dosage fixe, sans goût" },
+      { value: "vape",     label: "Vaporisation",          desc: "Rapide, discret, portable" },
+      { value: "gummies",  label: "Gummies",               desc: "Savoureux, facile à doser, effet progressif" },
+    ],
+  },
+  {
+    id: "experience",
+    question: "Quelle est votre expérience avec le CBD ?",
+    options: [
+      { value: "novice",   label: "Débutant",              desc: "Je n'ai jamais essayé le CBD" },
+      { value: "casual",   label: "Occasionnel",           desc: "J'ai déjà testé quelques fois" },
+      { value: "regular",  label: "Régulier",              desc: "Je consomme souvent, je connais mes effets" },
+      { value: "expert",   label: "Connaisseur",           desc: "J'ai des préférences très précises" },
+    ],
+  },
+  {
+    id: "intensity",
+    question: "Quelle intensité recherchez-vous ?",
+    options: [
+      { value: "douce",    label: "Douce",                 desc: "Effet subtil, idéal pour commencer ou le quotidien" },
+      { value: "moderee",  label: "Modérée",               desc: "Un effet bien présent mais maîtrisé" },
+      { value: "intense",  label: "Intense",               desc: "Je veux vraiment sentir quelque chose" },
+    ],
+  },
+  {
+    id: "budget",
+    question: "Quel est votre budget ?",
+    options: [
+      { value: "moins20",  label: "Moins de 20 €",         desc: "Découvrir sans trop investir" },
+      { value: "20-40",    label: "20 € – 40 €",           desc: "Un bon rapport qualité/prix" },
+      { value: "plus40",   label: "Plus de 40 €",          desc: "Prioriser la qualité premium" },
+    ],
+  },
 ];
 
-export default function Quiz() {
-  const [step, setStep] = useState(0);
+type Rec = {
+  slug: string; name: string; price: string;
+  category: string; cbdContent: string | null;
+  isBestseller: boolean; isNew: boolean; reason: string;
+};
+
+type QuizResult = { intro: string; recommendations: Rec[] };
+
+type State =
+  | { phase: "quiz" }
+  | { phase: "loading" }
+  | { phase: "result"; data: QuizResult }
+  | { phase: "error"; msg: string };
+
+export default function QuizPage() {
+  const [step, setStep]       = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [, setLocation] = useLocation();
+  const [state, setState]     = useState<State>({ phase: "quiz" });
+  const [, nav]               = useLocation();
 
-  const getQuizResult = useGetQuizResult();
+  async function choose(value: string) {
+    const q = QUESTIONS[step];
+    const next = { ...answers, [q.id]: value };
+    setAnswers(next);
 
-  const handleSelect = (optionId: string) => {
-    const newAnswers = { ...answers, [QUESTIONS[step].id]: optionId };
-    setAnswers(newAnswers);
-
-    if (step < QUESTIONS.length - 1) {
-      setTimeout(() => setStep(step + 1), 400);
+    if (step + 1 < QUESTIONS.length) {
+      setStep(s => s + 1);
     } else {
-      // Map answers to one of the 4 moods supported by API
-      let mood: 'serenity' | 'energy' | 'sleep' | 'focus' = 'serenity';
-      if (newAnswers.goal === 'sleep') mood = 'sleep';
-      else if (newAnswers.goal === 'focus') mood = 'focus';
-      else if (newAnswers.goal === 'energy') mood = 'energy';
-
-      // Pass all 3 answers so backend can do AI-driven personalization
-      getQuizResult.mutate({
-        data: {
-          mood,
-          goal: newAnswers.goal ?? null,
-          experience: newAnswers.experience ?? null,
-          format: newAnswers.format ?? null,
-        },
-      });
-      setStep(step + 1); // Move to results step
+      setState({ phase: "loading" });
+      try {
+        const base = import.meta.env.BASE_URL ?? "/";
+        const apiBase = base.replace(/\/$/, "");
+        const r = await fetch(`${apiBase}/api/quiz/recommend`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(next),
+        });
+        if (!r.ok) throw new Error(await r.text());
+        const data: QuizResult = await r.json();
+        setState({ phase: "result", data });
+      } catch (e: unknown) {
+        setState({ phase: "error", msg: e instanceof Error ? e.message : "Erreur réseau" });
+      }
     }
-  };
+  }
 
-  // Render Results
-  if (step >= QUESTIONS.length) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="container mx-auto px-6 py-24 min-h-[80vh]"
-      >
-        <div className="max-w-3xl mx-auto text-center mb-20">
-          <div className="w-16 h-16 mx-auto bg-secondary/10 border border-secondary/20 rounded-full flex items-center justify-center mb-8">
-            <Leaf className="w-8 h-8 text-primary" />
-          </div>
-          <h1 className="font-serif text-5xl mb-6 italic text-foreground">Votre Rituel Personnalisé</h1>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            D'après vos réponses, voici les créations botaniques que le concierge a sélectionnées spécifiquement pour vous.
+  if (state.phase === "loading") return <LoadingView />;
+  if (state.phase === "error")   return <ErrorView msg={state.msg} onRetry={() => { setStep(0); setAnswers({}); setState({ phase: "quiz" }); }} />;
+  if (state.phase === "result")  return <ResultView data={state.data} onRestart={() => { setStep(0); setAnswers({}); setState({ phase: "quiz" }); }} onShop={() => nav("/boutique")} />;
+
+  const q = QUESTIONS[step];
+
+  return (
+    <div style={{ background: "var(--cz-bg)", minHeight: "100vh",
+      display: "flex", flexDirection: "column", alignItems: "center",
+      padding: "48px 24px" }}>
+
+      <div style={{ width: "100%", maxWidth: 720, marginBottom: 48 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+          <span style={{ fontSize: 11, color: "var(--cz-gold)",
+            fontFamily: "sans-serif", letterSpacing: ".12em", textTransform: "uppercase" }}>
+            Question {step + 1} sur {QUESTIONS.length}
+          </span>
+          {step > 0 && (
+            <button onClick={() => setStep(s => s - 1)}
+              style={{ background: "none", border: "none", color: "var(--cz-text3)",
+                fontFamily: "sans-serif", fontSize: 12, cursor: "pointer",
+                letterSpacing: ".05em" }}>
+              Retour
+            </button>
+          )}
+        </div>
+        <div style={{ height: 2, background: "var(--cz-line)", borderRadius: 1, overflow: "hidden" }}>
+          <div style={{ height: "100%", background: "var(--cz-gold)",
+            width: `${((step + 1) / QUESTIONS.length) * 100}%`,
+            transition: "width .5s cubic-bezier(.4,0,.2,1)" }} />
+        </div>
+      </div>
+
+      <h1 style={{ fontSize: "clamp(22px,4vw,36px)", fontWeight: 400,
+        color: "var(--cz-text)", fontFamily: "serif", textAlign: "center",
+        marginBottom: 48, maxWidth: 520, lineHeight: 1.3 }}>
+        {q.question}
+      </h1>
+
+      <div style={{ display: "grid",
+        gridTemplateColumns: q.options.length > 4
+          ? "repeat(auto-fit, minmax(240px, 1fr))"
+          : "repeat(auto-fit, minmax(270px, 1fr))",
+        gap: 12, width: "100%", maxWidth: 720 }}>
+        {q.options.map(opt => (
+          <button key={opt.value} onClick={() => choose(opt.value)}
+            style={{ background: "var(--cz-surface)", border: "0.5px solid var(--cz-line)",
+              borderRadius: "var(--cz-r2)", padding: "22px 24px", cursor: "pointer",
+              textAlign: "left", display: "flex", flexDirection: "column", gap: 6,
+              transition: "all .18s ease" }}
+            onMouseEnter={e => {
+              const el = e.currentTarget as HTMLButtonElement;
+              el.style.borderColor = "var(--cz-gold)";
+              el.style.background  = "var(--cz-goldbg)";
+              el.style.transform   = "translateY(-2px)";
+              el.style.boxShadow   = "var(--cz-s2)";
+            }}
+            onMouseLeave={e => {
+              const el = e.currentTarget as HTMLButtonElement;
+              el.style.borderColor = "var(--cz-line)";
+              el.style.background  = "var(--cz-surface)";
+              el.style.transform   = "translateY(0)";
+              el.style.boxShadow   = "none";
+            }}>
+            <span style={{ fontSize: 16, color: "var(--cz-text)",
+              fontFamily: "serif", lineHeight: 1.3 }}>
+              {opt.label}
+            </span>
+            <span style={{ fontSize: 12.5, color: "var(--cz-text3)",
+              fontFamily: "sans-serif", lineHeight: 1.5 }}>
+              {opt.desc}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LoadingView() {
+  return (
+    <div style={{ background: "var(--cz-bg)", minHeight: "100vh",
+      display: "flex", flexDirection: "column", alignItems: "center",
+      justifyContent: "center", gap: 28, padding: "48px 24px" }}>
+      <div style={{ position: "relative", width: 64, height: 64 }}>
+        <div style={{
+          position: "absolute", inset: 0, borderRadius: "50%",
+          border: "2px solid var(--cz-line)",
+          borderTopColor: "var(--cz-gold)",
+          animation: "spin 1s linear infinite",
+        }} />
+      </div>
+      <p style={{ fontFamily: "serif", fontSize: 20, color: "var(--cz-text)",
+        textAlign: "center", maxWidth: 340, lineHeight: 1.5 }}>
+        Notre conseillère IA analyse votre profil...
+      </p>
+      <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "var(--cz-text3)",
+        textAlign: "center" }}>
+        Cela prend quelques secondes
+      </p>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
+}
+
+function ErrorView({ msg, onRetry }: { msg: string; onRetry: () => void }) {
+  return (
+    <div style={{ background: "var(--cz-bg)", minHeight: "100vh",
+      display: "flex", flexDirection: "column", alignItems: "center",
+      justifyContent: "center", gap: 20, padding: "48px 24px" }}>
+      <p style={{ fontFamily: "serif", fontSize: 22, color: "var(--cz-text)", textAlign: "center" }}>
+        Quelque chose s'est mal passé.
+      </p>
+      <p style={{ fontFamily: "sans-serif", fontSize: 13, color: "var(--cz-text3)",
+        maxWidth: 400, textAlign: "center" }}>
+        {msg}
+      </p>
+      <button onClick={onRetry}
+        style={{ marginTop: 8, background: "var(--cz-gold)", color: "var(--cz-btntxt)",
+          border: "none", borderRadius: 999, padding: "12px 28px",
+          fontFamily: "sans-serif", fontSize: 14, cursor: "pointer",
+          fontWeight: 600, letterSpacing: ".04em" }}>
+        Recommencer le quiz
+      </button>
+    </div>
+  );
+}
+
+function ResultView({ data, onRestart, onShop }: { data: QuizResult; onRestart: () => void; onShop: () => void }) {
+  const [, nav] = useLocation();
+  return (
+    <div style={{ background: "var(--cz-bg)", minHeight: "100vh",
+      display: "flex", flexDirection: "column", alignItems: "center",
+      padding: "60px 24px 80px" }}>
+
+      <div style={{ width: "100%", maxWidth: 700 }}>
+
+        <p style={{ fontFamily: "sans-serif", fontSize: 11, color: "var(--cz-gold)",
+          letterSpacing: ".14em", textTransform: "uppercase", marginBottom: 16 }}>
+          Votre sélection personnalisée
+        </p>
+
+        <h1 style={{ fontFamily: "serif", fontSize: "clamp(28px,5vw,42px)",
+          fontWeight: 400, color: "var(--cz-text)", lineHeight: 1.2, marginBottom: 32 }}>
+          Voici ce que je vous recommande
+        </h1>
+
+        <div style={{ background: "var(--cz-surface)", border: "0.5px solid var(--cz-gold)",
+          borderRadius: "var(--cz-r2)", padding: "24px 28px", marginBottom: 48 }}>
+          <p style={{ fontFamily: "sans-serif", fontSize: 15, color: "var(--cz-text)",
+            lineHeight: 1.7, margin: 0 }}>
+            {data.intro}
           </p>
         </div>
 
-        {getQuizResult.isPending ? (
-          <div className="flex justify-center p-20">
-            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        ) : getQuizResult.data ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-20 max-w-6xl mx-auto">
-              {getQuizResult.data.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {data.recommendations.map((rec, i) => (
+            <div key={rec.slug}
+              style={{ background: "var(--cz-surface)", border: "0.5px solid var(--cz-line)",
+                borderRadius: "var(--cz-r2)", padding: "24px 28px",
+                display: "flex", gap: 20, alignItems: "flex-start",
+                flexWrap: "wrap" }}>
+
+              <div style={{ width: 36, height: 36, borderRadius: "50%",
+                background: "var(--cz-goldbg)", border: "1px solid var(--cz-gold)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0 }}>
+                <span style={{ fontFamily: "serif", fontSize: 16,
+                  color: "var(--cz-gold)", fontWeight: 400 }}>
+                  {i + 1}
+                </span>
+              </div>
+
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8,
+                  flexWrap: "wrap", marginBottom: 4 }}>
+                  <span style={{ fontFamily: "serif", fontSize: 18,
+                    color: "var(--cz-text)", lineHeight: 1.2 }}>
+                    {rec.name}
+                  </span>
+                  {rec.isBestseller && (
+                    <span style={{ background: "var(--cz-gold)", color: "var(--cz-btntxt)",
+                      fontSize: 10, fontFamily: "sans-serif", fontWeight: 700,
+                      padding: "2px 8px", borderRadius: 999, letterSpacing: ".06em" }}>
+                      BEST-SELLER
+                    </span>
+                  )}
+                  {rec.isNew && (
+                    <span style={{ background: "var(--cz-green)", color: "#fff",
+                      fontSize: 10, fontFamily: "sans-serif", fontWeight: 700,
+                      padding: "2px 8px", borderRadius: 999, letterSpacing: ".06em" }}>
+                      NOUVEAU
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontFamily: "sans-serif", fontSize: 12.5,
+                  color: "var(--cz-text3)", margin: "0 0 8px",
+                  textTransform: "uppercase", letterSpacing: ".06em" }}>
+                  {rec.category}{rec.cbdContent ? ` · ${rec.cbdContent}` : ""}
+                </p>
+                <p style={{ fontFamily: "sans-serif", fontSize: 14,
+                  color: "var(--cz-text)", lineHeight: 1.6, margin: 0 }}>
+                  {rec.reason}
+                </p>
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column",
+                alignItems: "flex-end", gap: 10, flexShrink: 0 }}>
+                <span style={{ fontFamily: "serif", fontSize: 22,
+                  color: "var(--cz-text)" }}>
+                  {rec.price} €
+                </span>
+                <button
+                  onClick={() => nav(`/produits/${rec.slug}`)}
+                  style={{ background: "var(--cz-gold)", color: "var(--cz-btntxt)",
+                    border: "none", borderRadius: 999, padding: "10px 20px",
+                    fontFamily: "sans-serif", fontSize: 13, fontWeight: 600,
+                    cursor: "pointer", letterSpacing: ".04em",
+                    whiteSpace: "nowrap" }}>
+                  Voir le produit
+                </button>
+              </div>
             </div>
-            <div className="text-center">
-              <Button asChild size="lg" className="bg-transparent text-primary border border-primary hover:bg-primary hover:text-primary-foreground font-sans tracking-widest uppercase text-sm h-14 px-10 rounded-full transition-all duration-500">
-                <Link href="/boutique">Explorer toute la galerie</Link>
-              </Button>
-            </div>
-          </motion.div>
-        ) : (
-          <div className="text-center text-destructive p-8 bg-destructive/10 rounded-2xl border border-destructive/20 max-w-xl mx-auto">
-            Une erreur est survenue lors de l'analyse de vos réponses.
-          </div>
-        )}
-      </motion.div>
-    );
-  }
-
-  // Render Questions
-  const currentQuestion = QUESTIONS[step];
-
-  return (
-    <div className="container mx-auto px-6 py-24 max-w-4xl min-h-[80vh] flex flex-col justify-center relative">
-      {/* Background glow specific to quiz */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-[-1]">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full bg-primary/5 blur-[150px]" />
-      </div>
-
-      <div className="mb-16 max-w-xl mx-auto w-full text-center">
-        <div className="text-[10px] font-medium tracking-[0.2em] uppercase text-primary mb-6">
-          Question {step + 1} sur {QUESTIONS.length}
+          ))}
         </div>
-        <div className="h-1 bg-background border border-border/50 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-primary transition-all duration-700 ease-out"
-            style={{ width: `${((step + 1) / QUESTIONS.length) * 100}%` }}
-          />
+
+        <div style={{ marginTop: 48, display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <button onClick={onShop}
+            style={{ background: "var(--cz-gold)", color: "var(--cz-btntxt)",
+              border: "none", borderRadius: 999, padding: "13px 30px",
+              fontFamily: "sans-serif", fontSize: 14, fontWeight: 600,
+              cursor: "pointer", letterSpacing: ".04em" }}>
+            Voir toute la boutique
+          </button>
+          <button onClick={onRestart}
+            style={{ background: "none", color: "var(--cz-text3)",
+              border: "0.5px solid var(--cz-line)", borderRadius: 999,
+              padding: "13px 30px", fontFamily: "sans-serif", fontSize: 14,
+              cursor: "pointer", letterSpacing: ".04em" }}>
+            Recommencer le quiz
+          </button>
         </div>
-      </div>
-
-      <AnimatePresence mode="wait">
-        <motion.div 
-          key={step}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.4 }}
-          className="text-center mb-16"
-        >
-          <h2 className="font-serif text-4xl md:text-5xl mb-12">{currentQuestion.title}</h2>
-          
-          <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {currentQuestion.options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleSelect(option.id)}
-                className={`p-8 rounded-3xl border text-left flex items-center gap-6 transition-all duration-300 group
-                  ${answers[currentQuestion.id] === option.id 
-                    ? 'border-primary bg-primary/10 shadow-[0_0_30px_rgba(201,168,76,0.15)] scale-[1.02]' 
-                    : 'border-border/40 bg-card/40 hover:border-primary/40 hover:bg-card/80 inner-shadow-subtle'}`}
-              >
-                {"icon" in option && option.icon ? (
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center border transition-colors
-                    ${answers[currentQuestion.id] === option.id 
-                      ? 'bg-primary text-primary-foreground border-primary' 
-                      : 'bg-background/50 border-border/50 text-muted-foreground group-hover:text-primary group-hover:border-primary/30'}`}
-                  >
-                    <option.icon className="h-6 w-6" />
-                  </div>
-                ) : (
-                  <div className={`w-14 h-14 rounded-full flex items-center justify-center border transition-colors font-serif text-xl italic
-                    ${answers[currentQuestion.id] === option.id 
-                      ? 'bg-primary text-primary-foreground border-primary' 
-                      : 'bg-background/50 border-border/50 text-muted-foreground group-hover:text-primary group-hover:border-primary/30'}`}
-                  >
-                    {option.id.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <span className="font-serif text-2xl group-hover:text-primary transition-colors">{option.label}</span>
-              </button>
-            ))}
-          </div>
-        </motion.div>
-      </AnimatePresence>
-
-      <div className="flex justify-center mt-auto">
-        <Button 
-          variant="ghost" 
-          onClick={() => setStep(Math.max(0, step - 1))}
-          className={`font-sans uppercase tracking-widest text-xs text-muted-foreground hover:text-primary rounded-full px-6 h-12 ${step === 0 ? "invisible" : "visible"}`}
-        >
-          <ArrowLeft className="mr-3 h-4 w-4" /> Revenir à la question précédente
-        </Button>
       </div>
     </div>
   );
