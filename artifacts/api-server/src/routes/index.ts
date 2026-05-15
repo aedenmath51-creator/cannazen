@@ -17,8 +17,11 @@ import paymentRouter from "./payment";
 import adminRouter from "./admin";
 import seoRouter from "./seo";
 import chatRouter from "./chat";
+import quizRouter from "./quiz";
 import oauthGoogleRouter from "./oauth-google";
 import shippingSendcloudRouter from "./shipping-sendcloud";
+import deliveryRouter from "./delivery";
+import adminDeliveryRouter from "./admin-delivery";
 
 const router: IRouter = Router();
 
@@ -38,8 +41,11 @@ router.use(consentRouter);
 router.use(shippingRouter);
 router.use(paymentRouter);
 router.use(chatRouter);
+router.use(quizRouter);
 router.use(oauthGoogleRouter);
 router.use(shippingSendcloudRouter);
+router.use(deliveryRouter);
+router.use(adminDeliveryRouter);
 router.use(adminRouter);
 router.use(seoRouter);
 
