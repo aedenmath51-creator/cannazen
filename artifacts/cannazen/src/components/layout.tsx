@@ -348,7 +348,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   <Button
                     ref={primaryButtonRef}
                     size="lg"
-                    className="w-full font-sans tracking-widest uppercase text-sm bg-transparent border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 h-14 rounded-full"
+                    className="w-full font-sans tracking-widest uppercase text-sm bg-transparent border border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 h-14 rounded-full"
                     onClick={() => handleAgeConfirm(true)}
                     data-testid="age-gate-confirm"
                   >
@@ -435,56 +435,120 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </header>
         )}
 
-        {/* Floating actions (desktop) */}
+        {/* Floating action bar (desktop) — barre HUD visible */}
         {!isAdminRoute && (
-          <div className="hidden md:flex fixed top-5 right-6 z-30 items-center gap-2">
+          <div className="hidden md:flex fixed top-4 right-5 z-30 items-center gap-1.5"
+            style={{
+              background:"var(--cz-surface)",
+              border:"0.5px solid var(--cz-line2)",
+              borderRadius:"var(--cz-pill)",
+              padding:"4px 6px 4px 14px",
+              boxShadow:"var(--cz-s2)",
+              backdropFilter:"blur(14px)",
+            }}>
+            {/* Petit pigeon décoratif */}
+            <svg width="18" height="14" viewBox="-22 -12 44 20" style={{opacity:.55,marginRight:2}}>
+              <ellipse cx="0" cy="0" rx="10" ry="5" fill="currentColor"/>
+              <path d="M-9 1 L-17 -3 L-13 1 L-17 4Z" fill="currentColor" opacity=".7"/>
+              <circle cx="9" cy="-4" r="4.5" fill="currentColor"/>
+              <path d="M12 -5 L18 -3.5 L12 -2Z" fill="var(--cz-gold)"/>
+              <circle cx="11" cy="-5" r="1.5" fill="var(--cz-bg)"/>
+            </svg>
+
             {isAuthenticated ? (
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={() => logout.mutate()}
-                className="text-xs font-medium tracking-widest uppercase text-muted-foreground hover:text-primary rounded-full px-3"
                 data-testid="menu-logout"
+                style={{
+                  fontSize:11, fontFamily:"'DM Sans',sans-serif",
+                  letterSpacing:".1em", textTransform:"uppercase",
+                  color:"var(--cz-text2)", background:"none", border:"none",
+                  cursor:"pointer", padding:"4px 8px", borderRadius:20,
+                  display:"flex", alignItems:"center", gap:5,
+                  transition:"color .2s",
+                }}
+                onMouseEnter={e=>(e.currentTarget.style.color="var(--cz-gold)")}
+                onMouseLeave={e=>(e.currentTarget.style.color="var(--cz-text2)")}
               >
-                <LogOut className="h-3.5 w-3.5 mr-1.5" />
+                <LogOut style={{width:12,height:12}}/>
                 {user?.firstName ?? "Déconnexion"}
-              </Button>
+              </button>
             ) : (
               <Link href="/connexion">
-                <Button variant="ghost" size="sm" className="text-xs font-medium tracking-widest uppercase text-muted-foreground hover:text-primary rounded-full px-3" data-testid="menu-login">
+                <button
+                  data-testid="menu-login"
+                  style={{
+                    fontSize:11, fontFamily:"'DM Sans',sans-serif",
+                    letterSpacing:".1em", textTransform:"uppercase",
+                    color:"var(--cz-text)", background:"none", border:"none",
+                    cursor:"pointer", padding:"4px 10px", borderRadius:20,
+                    fontWeight:500, transition:"color .2s",
+                  }}
+                  onMouseEnter={e=>(e.currentTarget.style.color="var(--cz-gold)")}
+                  onMouseLeave={e=>(e.currentTarget.style.color="var(--cz-text)")}
+                >
                   Connexion
-                </Button>
+                </button>
               </Link>
             )}
+
             {isAdmin && (
               <Link href="/console-cz">
-                <Button variant="ghost" size="sm" className="text-xs font-medium tracking-widest uppercase text-primary hover:text-primary rounded-full px-3">
-                  <Shield className="h-3.5 w-3.5 mr-1.5" />
-                  Admin
-                </Button>
+                <button style={{
+                  fontSize:11, fontFamily:"'DM Sans',sans-serif",
+                  letterSpacing:".1em", textTransform:"uppercase",
+                  color:"var(--cz-gold)", background:"none", border:"none",
+                  cursor:"pointer", padding:"4px 8px", borderRadius:20,
+                  display:"flex", alignItems:"center", gap:4,
+                }}>
+                  <Shield style={{width:11,height:11}}/>Admin
+                </button>
               </Link>
             )}
+
+            {/* Séparateur */}
+            <div style={{width:1,height:22,background:"var(--cz-line)",margin:"0 2px"}}/>
+
+            {/* Bouton Panier — bien visible, fond doré */}
             <Link href="/panier">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative h-10 w-10 rounded-full border border-border/50 bg-card/60 backdrop-blur-sm text-foreground hover:text-primary hover:border-primary/40 transition-all duration-300"
+              <button
                 data-testid="cart-icon"
+                style={{
+                  position:"relative",
+                  display:"flex", alignItems:"center", gap:7,
+                  background:"var(--cz-gold)", color:"var(--cz-inv)",
+                  border:"none", cursor:"pointer",
+                  borderRadius:"var(--cz-pill)",
+                  padding:"8px 16px 8px 12px",
+                  fontSize:11, fontFamily:"'DM Sans',sans-serif",
+                  fontWeight:700, letterSpacing:".1em", textTransform:"uppercase",
+                  transition:"background .2s, transform .15s",
+                }}
+                onMouseEnter={e=>{e.currentTarget.style.background="var(--cz-gold2)";e.currentTarget.style.transform="scale(1.04)"}}
+                onMouseLeave={e=>{e.currentTarget.style.background="var(--cz-gold)";e.currentTarget.style.transform="scale(1)"}}
               >
-                <ShoppingBag className="h-4 w-4" />
+                <ShoppingBag style={{width:15,height:15}}/>
+                Panier
                 {cart && cart.itemCount > 0 && (
                   <motion.span
                     key={cart.itemCount}
                     initial={{ scale: 0.5 }}
                     animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center"
                     data-testid="cart-count"
+                    style={{
+                      position:"absolute", top:-6, right:-6,
+                      width:20, height:20, borderRadius:"50%",
+                      background:"var(--cz-text)", color:"var(--cz-inv)",
+                      fontSize:10, fontWeight:800,
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      border:"2px solid var(--cz-surface)",
+                    }}
                   >
                     {cart.itemCount}
                   </motion.span>
                 )}
                 <span className="sr-only">Panier</span>
-              </Button>
+              </button>
             </Link>
           </div>
         )}
