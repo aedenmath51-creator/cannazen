@@ -1,7 +1,10 @@
 const AGE_VERIFIED_KEY = "cannazen_age_verified";
 const GUEST_SESSION_INITIALIZED_KEY = "cannazen_guest_init";
 
-const BASE = (import.meta.env.BASE_URL || "/").replace(/\/$/, "") + "/api";
+const RAW_API_URL = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+const BASE = RAW_API_URL
+  ? RAW_API_URL.replace(/\/$/, "") + "/api"
+  : (import.meta.env.BASE_URL || "/").replace(/\/$/, "") + "/api";
 
 let initPromise: Promise<void> | null = null;
 
