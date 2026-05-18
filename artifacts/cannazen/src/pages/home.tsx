@@ -32,8 +32,8 @@ const LIGHT = {
   heroBadgeBdr: "rgba(90,122,64,0.3)",
   heroBadgeTxt: "#4a6a38",
   titleMain:    "#1e3218",
-  titleGrad:    "linear-gradient(130deg, #4a7838 0%, #7aac50 30%, #c9a84c 60%, #e8b858 85%, #9a7230 100%)",
-  wordGrad:     "linear-gradient(135deg, #5a7a40, #8aaa60, #c9a84c)",
+  titleGrad:    "linear-gradient(130deg, #0e2010 0%, #1e4018 35%, #6a4a10 65%, #9a7020 100%)",
+  wordGrad:     "linear-gradient(135deg, #2a5018, #4a7838, #8a6020)",
   subtitleTxt:  "#5a6a50",
   mutedTxt:     "#7a8a72",
   statsBg:      "linear-gradient(90deg, rgba(90,122,64,0.12), rgba(201,168,76,0.12), rgba(90,122,64,0.12))",
@@ -347,7 +347,7 @@ export default function Home() {
           >
             <span className="block text-4xl md:text-6xl lg:text-7xl mb-3" style={{ color: c.titleMain }}>L'univers de</span>
             <span className="block text-6xl md:text-8xl lg:text-[7rem] italic font-light"
-              style={{ background: c.titleGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              style={{ backgroundImage: c.titleGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
               Mary Jane
             </span>
           </motion.h1>
@@ -365,7 +365,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -14 }}
                   transition={{ duration: 0.4, ease: "easeInOut" }}
                   className="font-serif italic text-3xl md:text-4xl"
-                  style={{ background: c.wordGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}
+                  style={{ backgroundImage: c.wordGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}
                 >
                   {ROTATING_WORDS[wordIndex]}
                 </motion.span>
@@ -414,7 +414,7 @@ export default function Home() {
             <div key={i} className="flex-1 py-5 flex flex-col items-center"
               style={{ borderRight: i < 2 ? `1px solid ${c.statsDivider}` : "none" }}>
               <span className="font-serif text-2xl mb-0.5"
-                style={{ background: c.statsNumGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                style={{ backgroundImage: c.statsNumGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                 {s.value}
               </span>
               <span className="text-[9px] tracking-[0.22em] uppercase" style={{ color: c.mutedTxt }}>{s.label}</span>
@@ -435,10 +435,29 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ══ PIGEON DELIVERY ══════════════════════════════════════════════
-          Full-width, no container — le banner gère lui-même son fond
-      ═══════════════════════════════════════════════════════════════════ */}
-      <PigeonBanner />
+      {/* ══ PIGEON DELIVERY ════════════════════════════════════════════ */}
+      <section style={{ background: isDark ? "linear-gradient(180deg,#0d1e10,#0a1a0c)" : "linear-gradient(180deg,#eef5e8,#e8f0e0)" }}>
+        {/* Label */}
+        <div className="container mx-auto px-6 pt-10 pb-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-8 h-px" style={{ background: isDark ? "rgba(201,168,76,0.5)" : "rgba(90,122,64,0.5)" }} />
+            <span className="text-[10px] font-medium tracking-[0.3em] uppercase" style={{ color: isDark ? "rgba(201,168,76,0.7)" : "#5a7a40" }}>
+              Livraison locale · Strasbourg
+            </span>
+          </div>
+          <span className="text-[10px] font-medium tracking-[0.2em] uppercase" style={{ color: isDark ? "rgba(255,255,255,0.3)" : "#8a9a80" }}>
+            Gratuit dès 50 €
+          </span>
+        </div>
+        {/* Full-width banner — le composant gère son propre fond */}
+        <PigeonBanner />
+        {/* Sous-texte */}
+        <div className="container mx-auto px-6 pt-4 pb-8 text-center">
+          <p className="text-xs leading-relaxed" style={{ color: isDark ? "rgba(255,255,255,0.35)" : "#6a7a60" }}>
+            Service de livraison express par pigeon voyageur certifié · Zone Strasbourg &amp; environs · 7j/7
+          </p>
+        </div>
+      </section>
 
       {/* ══ PRODUITS ════════════════════════════════════════════════════ */}
       <section className="py-24" style={{ background: c.productsBg }}>
@@ -452,7 +471,7 @@ export default function Home() {
               <h2 className="font-serif text-4xl md:text-5xl" style={{ color: isDark ? "white" : "#1e3218" }}>
                 Nos meilleurs{" "}
                 <span className="italic"
-                  style={{ background: c.productH2Grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                  style={{ backgroundImage: c.productH2Grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                   produits
                 </span>
               </h2>
@@ -499,7 +518,7 @@ export default function Home() {
             <h2 className="font-serif text-4xl md:text-5xl" style={{ color: isDark ? "white" : "#1e3218" }}>
               Toutes nos{" "}
               <span className="italic"
-                style={{ background: c.catH2Grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                style={{ backgroundImage: c.catH2Grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                 catégories
               </span>
             </h2>
@@ -522,7 +541,7 @@ export default function Home() {
                     {cat.description || "Essences naturelles cultivées avec passion, récoltées à maturité parfaite."}
                   </p>
                   <div className="text-[9px] font-medium tracking-[0.3em] uppercase flex items-center gap-2"
-                    style={{ background: c.catLinkGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                    style={{ backgroundImage: c.catLinkGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                     Explorer
                     <span className="transition-transform duration-400 group-hover:translate-x-1.5"
                       style={{ WebkitTextFillColor: isDark ? "#c9a84c" : "#c9a84c" }}>→</span>
@@ -547,7 +566,7 @@ export default function Home() {
             <h2 className="font-serif text-4xl md:text-5xl" style={{ color: isDark ? "white" : "#1e3218" }}>
               L'excellence à{" "}
               <span className="italic"
-                style={{ background: c.featH2Grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                style={{ backgroundImage: c.featH2Grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                 chaque étape
               </span>
             </h2>
@@ -598,7 +617,7 @@ export default function Home() {
           <h2 className="font-serif text-4xl md:text-5xl mb-4" style={{ color: c.quizH2Clr }}>
             Comment vous sentez-vous{" "}
             <span className="italic"
-              style={{ background: c.quizH2Grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              style={{ backgroundImage: c.quizH2Grad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
               aujourd'hui ?
             </span>
           </h2>
@@ -664,7 +683,7 @@ export default function Home() {
                     "{reviews[reviewIndex].body}"
                   </blockquote>
                   <div className="text-sm font-medium tracking-widest uppercase"
-                    style={{ background: c.reviewAuthorGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                    style={{ backgroundImage: c.reviewAuthorGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                     {reviews[reviewIndex].authorName}
                     {reviews[reviewIndex].authorLocation && (
                       <span style={{ WebkitTextFillColor: c.reviewLocClr, color: c.reviewLocClr }}> · {reviews[reviewIndex].authorLocation}</span>
@@ -731,7 +750,7 @@ export default function Home() {
                   style={{ background: `linear-gradient(${c.footerCards[i]})`, border: `1px solid ${c.footerCardBdr}` }}
                 >
                   <h3 className="font-serif text-2xl md:text-3xl transition-all duration-300 group-hover:opacity-75"
-                    style={{ background: c.footerTitleGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                    style={{ backgroundImage: c.footerTitleGrad, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                     {card.title}
                   </h3>
                   <p className="text-sm flex-1" style={{ color: c.footerDesc }}>{card.desc}</p>
