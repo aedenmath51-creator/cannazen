@@ -25,7 +25,8 @@ app.use(
   }),
 );
 app.use(helmetMiddleware);
-const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "")
+const isProd = process.env["NODE_ENV"] === "production";
+const allowedOrigins = (process.env["ALLOWED_ORIGINS"] ?? "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
@@ -36,11 +37,12 @@ app.use(
     origin(origin, cb) {
       // Allow same-origin / curl / server-to-server
       if (!origin) return cb(null, true);
-      // Allow listed origins or any vercel preview/prod of this project
-      if (allowedOrigins.length === 0) return cb(null, true);
       if (allowedOrigins.includes(origin)) return cb(null, true);
+      // Allow any vercel preview/prod deployment of cannazen project
       if (/^https:\/\/cannazen(-[a-z0-9-]+)?\.vercel\.app$/.test(origin))
         return cb(null, true);
+      // Dev convenience: allow all when explicitly not in production and no allowlist set
+      if (!isProd && allowedOrigins.length === 0) return cb(null, true);
       cb(new Error(`CORS: origin ${origin} not allowed`));
     },
   }),
