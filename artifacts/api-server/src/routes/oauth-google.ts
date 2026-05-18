@@ -2,7 +2,7 @@ import { Router, type Request } from "express";
 import { randomBytes } from "node:crypto";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
-import { createSession, sessionCookieOptions, SESSION_COOKIE_NAME } from "../lib/auth";
+import { createSession, sessionCookieOptions, SESSION_COOKIE_NAME, crossSiteCookieBase } from "../lib/auth";
 import { logAudit } from "../lib/audit";
 
 const router = Router();
@@ -28,10 +28,7 @@ router.get("/auth/google", (req, res) => {
 
   const state = randomBytes(24).toString("base64url");
   res.cookie(STATE_COOKIE, state, {
-    httpOnly: true,
-    secure: req.secure,
-    sameSite: "lax",
-    path: "/",
+    ...crossSiteCookieBase(req.secure),
     maxAge: 10 * 60 * 1000,
   });
 
