@@ -25,7 +25,26 @@ app.use(
   }),
 );
 app.use(helmetMiddleware);
-app.use(cors({ origin: true, credentials: true }));
+const allowedOrigins = (process.env.ALLOWED_ORIGINS ?? "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    credentials: true,
+    origin(origin, cb) {
+      // Allow same-origin / curl / server-to-server
+      if (!origin) return cb(null, true);
+      // Allow listed origins or any vercel preview/prod of this project
+      if (allowedOrigins.length === 0) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      if (/^https:\/\/cannazen(-[a-z0-9-]+)?\.vercel\.app$/.test(origin))
+        return cb(null, true);
+      cb(new Error(`CORS: origin ${origin} not allowed`));
+    },
+  }),
+);
 app.use(
   express.json({
     limit: "1mb",
