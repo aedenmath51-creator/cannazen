@@ -84,12 +84,22 @@ export async function getGuestSession(id: string): Promise<string | null> {
 
 export const SESSION_COOKIE_NAME = SESSION_COOKIE;
 
-export function sessionCookieOptions(secure: boolean) {
+const CROSS_SITE_COOKIES =
+  process.env["CROSS_SITE_COOKIES"] === "true" ||
+  process.env["NODE_ENV"] === "production";
+
+export function crossSiteCookieBase(reqSecure: boolean) {
   return {
     httpOnly: true,
-    secure,
-    sameSite: "lax" as const,
+    secure: CROSS_SITE_COOKIES ? true : reqSecure,
+    sameSite: (CROSS_SITE_COOKIES ? "none" : "lax") as "none" | "lax",
     path: "/",
+  };
+}
+
+export function sessionCookieOptions(secure: boolean) {
+  return {
+    ...crossSiteCookieBase(secure),
     maxAge: SESSION_DURATION_DAYS * 24 * 60 * 60 * 1000,
   };
 }
