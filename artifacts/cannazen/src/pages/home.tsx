@@ -5,6 +5,7 @@ import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { Leaf, ShieldCheck, Sparkles, Moon, Zap, Truck, FlaskConical, Award, Headset, Star } from "lucide-react";
 import { LotusLogo } from "@/components/lotus-logo";
+import { PigeonBanner as PigeonDeliveryBanner } from "@/components/ui/PigeonBanner";
 import { useToast } from "@/hooks/use-toast";
 import { useSeo } from "@/hooks/use-seo";
 import { motion, AnimatePresence } from "framer-motion";
@@ -219,6 +220,11 @@ export default function Home() {
         </div>
       </motion.div>
 
+      {/* Pigeon delivery banner */}
+      <section className="container mx-auto px-6 py-12 relative z-20">
+        <PigeonDeliveryBanner />
+      </section>
+
       {/* Infinite Marquee */}
       <div className="w-full bg-card py-4 overflow-hidden flex border-y border-border/40 relative z-20">
         <div className="flex w-fit animate-marquee hover:[animation-play-state:paused]">
@@ -275,23 +281,24 @@ export default function Home() {
             Toutes nos <span className="italic text-primary">catégories</span>
           </h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-10 gap-y-12 max-w-6xl mx-auto">
             {categories?.map((cat) => (
-              <Link key={cat.id} href={`/boutique?category=${cat.slug}`} className="group block h-full">
-                <div className="p-8 h-full bg-background/50 border border-border/40 hover:border-primary/30 rounded-2xl flex flex-col transition-all duration-500 hover:-translate-y-1 hairline-gold inner-shadow-subtle">
-                  <h3 className="font-serif text-2xl text-foreground group-hover:text-primary transition-colors mb-3">
+              <Link key={cat.id} href={`/boutique?category=${cat.slug}`} className="group block">
+                <article className="flex flex-col h-full pb-6 border-b border-border/40 group-hover:border-primary/50 transition-colors duration-500">
+                  <div className="text-[10px] font-medium tracking-[0.25em] uppercase text-muted-foreground/70 mb-3">
+                    {String(cat.productCount).padStart(2, "0")} {cat.productCount > 1 ? "créations" : "création"}
+                  </div>
+                  <h3 className="font-serif text-2xl md:text-[1.6rem] leading-tight text-foreground group-hover:text-primary transition-colors duration-500 mb-4">
                     {cat.name}
                   </h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-8 flex-1">
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">
                     {cat.description || "Essences naturelles cultivées avec passion, récoltées à maturité parfaite."}
                   </p>
-                  <div className="flex items-center justify-between mt-auto">
-                    <span className="text-xs font-medium text-muted-foreground">{cat.productCount} produits</span>
-                    <span className="text-xs font-medium tracking-widest uppercase text-primary opacity-0 -translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-500">
-                      Explorer →
-                    </span>
+                  <div className="text-[10px] font-medium tracking-[0.25em] uppercase text-primary inline-flex items-center gap-2 mt-auto">
+                    Explorer
+                    <span className="inline-block transition-transform duration-500 group-hover:translate-x-1">→</span>
                   </div>
-                </div>
+                </article>
               </Link>
             ))}
           </div>
@@ -311,7 +318,7 @@ export default function Home() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-10 max-w-5xl mx-auto">
           {[
             { icon: ShieldCheck, title: "Paiement 100% Sécurisé", desc: "Transactions chiffrées SSL" },
             { icon: Leaf, title: "Qualité Certifiée Bio", desc: "Analyses laboratoires indépendants" },
@@ -320,16 +327,11 @@ export default function Home() {
             { icon: Award, title: "Sélection Premium", desc: "Seul le meilleur 1% référencé" },
             { icon: Headset, title: "Support Client Expert", desc: "Conseillers disponibles 7j/7" }
           ].map((feature, i) => (
-            <div key={i} className="p-8 border border-border/40 rounded-2xl bg-card/20 flex flex-col gap-6 hover:bg-card/40 transition-colors">
-              <div className="w-12 h-12 rounded-full bg-secondary/10 border border-secondary/20 flex items-center justify-center text-primary">
-                <feature.icon className="w-5 h-5" />
-              </div>
+            <div key={i} className="group flex flex-col gap-4 pb-8 border-b border-border/40">
+              <feature.icon className="w-4 h-4 text-primary/70" />
               <div>
-                <h3 className="font-serif text-xl mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.desc}</p>
-              </div>
-              <div className="mt-auto pt-4 text-xs font-medium tracking-widest uppercase text-muted-foreground/50 hover:text-primary transition-colors cursor-pointer w-fit">
-                En savoir plus →
+                <h3 className="font-serif text-xl mb-1.5 group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
               </div>
             </div>
           ))}
@@ -352,19 +354,19 @@ export default function Home() {
             Choisissez votre humeur — nous vous guidons vers les produits qui lui correspondent.
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto mb-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-12 gap-y-8 max-w-3xl mx-auto mb-12">
             {[
               { id: "serenity", title: "Sérénité", desc: "Détente & calme", icon: Leaf },
               { id: "energy", title: "Énergie", desc: "Vitalité & clarté", icon: Zap },
               { id: "sleep", title: "Sommeil", desc: "Repos & récupération", icon: Moon },
               { id: "focus", title: "Focus", desc: "Concentration & flow", icon: Sparkles }
             ].map(mood => (
-              <Link key={mood.id} href={`/quiz?mood=${mood.id}`} className="p-8 border border-border/40 bg-background/50 hover:bg-background hover:border-primary/50 transition-all duration-300 text-center group rounded-2xl inner-shadow-subtle">
-                <div className="mx-auto w-16 h-16 rounded-full bg-muted/20 flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors">
-                  <mood.icon className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+              <Link key={mood.id} href={`/quiz?mood=${mood.id}`} className="group flex flex-col items-center text-center gap-4 pb-6 border-b border-border/40 hover:border-primary/50 transition-colors duration-500">
+                <mood.icon className="h-5 w-5 text-primary/60 group-hover:text-primary transition-colors duration-300" />
+                <div>
+                  <h3 className="font-serif text-xl mb-1 group-hover:text-primary transition-colors duration-300">{mood.title}</h3>
+                  <p className="text-[11px] text-muted-foreground tracking-wide">{mood.desc}</p>
                 </div>
-                <h3 className="font-serif text-2xl mb-2">{mood.title}</h3>
-                <p className="text-xs text-muted-foreground">{mood.desc}</p>
               </Link>
             ))}
           </div>
@@ -441,17 +443,20 @@ export default function Home() {
       {/* Footer Cards */}
       <section className="py-20 bg-background">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-10">
             {[
               { title: "Coffrets Surprise", desc: "Sélections thématiques · Jusqu'à -30%" },
               { title: "Nos Terroirs", desc: "Explorez les régions françaises" },
               { title: "Programme Fidélité", desc: "Gagnez des points · Récompenses exclusives" }
             ].map((card, i) => (
-              <div key={i} className="p-8 bg-card border border-border/40 rounded-2xl hairline-gold group cursor-pointer hover:bg-card/80 transition-colors">
-                <h3 className="font-serif text-2xl mb-2 group-hover:text-primary transition-colors">{card.title}</h3>
-                <p className="text-sm text-muted-foreground mb-6">{card.desc}</p>
-                <span className="text-xs font-medium tracking-widest uppercase text-primary">Explorer →</span>
-              </div>
+              <article key={i} className="group cursor-pointer flex flex-col gap-4 pb-8 border-b border-border/40 hover:border-primary/50 transition-colors duration-500">
+                <h3 className="font-serif text-2xl group-hover:text-primary transition-colors duration-300">{card.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed flex-1">{card.desc}</p>
+                <div className="text-[10px] font-medium tracking-[0.25em] uppercase text-primary inline-flex items-center gap-2">
+                  Explorer
+                  <span className="inline-block transition-transform duration-500 group-hover:translate-x-1">→</span>
+                </div>
+              </article>
             ))}
           </div>
         </div>
