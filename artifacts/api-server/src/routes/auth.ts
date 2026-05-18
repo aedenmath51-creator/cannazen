@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { db, usersTable, emailVerificationTokensTable, passwordResetTokensTable, cartsTable, wishlistItemsTable, ordersTable } from "@workspace/db";
 import { eq, and, gt, isNull } from "drizzle-orm";
-import { hashPassword, verifyPassword, createSession, destroySession, destroyAllUserSessions, createGuestSession, GUEST_SESSION_COOKIE, generateToken, sessionCookieOptions, SESSION_COOKIE_NAME, sanitizeUser } from "../lib/auth";
+import { hashPassword, verifyPassword, createSession, destroySession, destroyAllUserSessions, createGuestSession, GUEST_SESSION_COOKIE, generateToken, sessionCookieOptions, SESSION_COOKIE_NAME, sanitizeUser, crossSiteCookieBase } from "../lib/auth";
 import { sendTemplate, templates } from "../lib/email";
 import { authRateLimiter } from "../middlewares/security";
 import { requireAuth } from "../middlewares/auth";
@@ -90,10 +90,7 @@ router.post("/auth/guest-session", async (req, res) => {
   }
   const guest = await createGuestSession();
   res.cookie(GUEST_SESSION_COOKIE, guest.id, {
-    httpOnly: true,
-    secure: req.secure,
-    sameSite: "lax" as const,
-    path: "/",
+    ...crossSiteCookieBase(req.secure),
     maxAge: 90 * 24 * 60 * 60 * 1000,
   });
   return res.json({ sessionId: guest.id });
